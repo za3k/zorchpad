@@ -12,11 +12,13 @@ Purchased list:
 
 - $21.50 Ambiq Apollo3 SoC breakout dev board. Sparkfun: [Sparkfun DEV-15444][1] (x1)
     - [Apollo3 Blue Datasheet][6] [(ambiq)][7]
+    - [Cortex M4 Datasheet][18] [Tech Manual][19]
     - [Schematic][8]
     - [Integration Guide][9]
     - [Arduino Support][10]
 - $9.95 Ambiq Apollo3 SoC module. Sparkfun: [Sparkfun WRL-15484][2] (x2)
     - [Apollo3 Blue Datasheet][6] [(ambiq)][7]
+    - [Cortex M4 Datasheet][18] [Tech Manual][19]
     - [Integration Guide][9]
     - [Schematic][11]
     - [Pinout][12]
@@ -47,6 +49,10 @@ Purchased list:
 [11]: datasheets/Artemis_Schematic.pdf
 [12]: https://cdn.sparkfun.com/assets/9/a/7/1/c/ArtemisModule_Pinout.pdf
 [12]: datasheets/Artemis_Pinout.pdf
+[18]: https://documentation-service.arm.com/static/62053f0a0ca305732a3a5c17?token=
+[18]: datasheets/Arm-Cortex-M4_Datasheet.pdf
+[19]: https://documentation-service.arm.com/static/5f19da2a20b7cf4bc524d99a?token=
+[19]: datasheets/Arm-Cortex-M4_Manual.pdf
 
 [13]: https://learn.adafruit.com/adafruit-sharp-memory-display-breakout
 [14]: https://cdn-learn.adafruit.com/assets/assets/000/094/215/original/LS027B7DH01_Rev_Jun_2010.pdf?1597872422
