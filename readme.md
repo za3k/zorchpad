@@ -16,6 +16,7 @@ Purchased list:
     - [Schematic][8]
     - [Integration Guide][9]
     - [Arduino Support][10]
+    - Works with Arduino IDE
 - $9.95 Ambiq Apollo3 SoC module. Sparkfun: [Sparkfun WRL-15484][2] (x2)
     - [Apollo3 Blue Datasheet][6] [(ambiq)][7]
     - [Cortex M4 Datasheet][18] [Tech Manual][19]
