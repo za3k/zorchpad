@@ -12,6 +12,7 @@ Purchased list:
 
 - $21.50 Ambiq Apollo3 SoC breakout dev board. Sparkfun: [Sparkfun DEV-15444][1] (x1)
     - [Apollo3 Blue Datasheet][6] [(ambiq)][7]
+        - 16 mA max current draw from I/O pins
     - [Cortex M4 Datasheet][18] [Tech Manual][19]
     - [Schematic][8]
     - [Integration Guide][9]
