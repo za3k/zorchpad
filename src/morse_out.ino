@@ -28,17 +28,19 @@ void tone(int durationMs) { tone(durationMs, DEFAULT_FREQ); }
 // The standard word (PARIS) is 50 units long. If a dit was 1200ms long, you would transmit
 // at 1 wpm.
 #define WPM 20
+// Farnsworth spacing. To learn morse, it's better to add gaps between characters instead of slowing down the whole thing. Make this as low as you need.
+#define WORD_WPM 5
+
 #define DIT (1200/WPM)
+#define SPACE_DIT (1200/WORD_WPM)
 
 #define dit tone(DIT); delay(DIT);
 #define di dit
 #define dah tone(DIT*3); delay(DIT);
 // Called after dit or dah, for a total of 3 units
-#define letter_space delay(DIT*2);
+#define letter_space delay(SPACE_DIT*3-DIT);
 // Called in addition to letter_space, for a total of 7 units
-#define word_space delay(DIT*4);
-
-// TODO: Farnsworth spacing
+#define word_space delay(SPACE_DIT*7-DIT);
 
 void sayMorse(char letter) {
   // Codes from https://morsecode.world/international/morse.html
@@ -80,7 +82,7 @@ void sayMorse(char letter) {
     case '7': dah dah dit dit dit; break;
     case '8': dah dah dah dit dit; break;
     case '9': dah dah dah dah dit; break;
-    case ' ': word_space; break;
+    case ' ': word_space; return; break;
     case '&': di dah di di dit; break;
     case '\'': di dah dah dah dah dit; break;
     case '@': di dah dah di dah dit; break;
@@ -111,6 +113,7 @@ void sayMorse(char *words) {
 }
 
 void loop() {
-  //sayMorse("SOS "); //dit dit dit ... dah dah dah ... dit dit dit ...
+  //sayMorse("SOS "); //dit dit dit dah dah dah dit dit dit word_space;
+  //sayMorse("What hath God wrought? ");
   sayMorse("Hello ");
 }
