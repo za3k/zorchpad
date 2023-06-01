@@ -6,6 +6,11 @@
 
 #define AUDIO_PIN 2
 #define DEFAULT_FREQ 100
+// Target morse spacing. I recommend against decreasing this.
+#define WPM 20
+// Farnsworth spacing. To learn morse, it's better to add gaps between characters instead of slowing down the whole thing. Make this as low as you need.
+#define WORD_WPM 5
+
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -25,12 +30,7 @@ void tone(int durationMs, int freq) {
 }
 void tone(int durationMs) { tone(durationMs, DEFAULT_FREQ); }
 
-// The standard word (PARIS) is 50 units long. If a dit was 1200ms long, you would transmit
-// at 1 wpm.
-#define WPM 20
-// Farnsworth spacing. To learn morse, it's better to add gaps between characters instead of slowing down the whole thing. Make this as low as you need.
-#define WORD_WPM 5
-
+// The standard word (PARIS) is 50 units long. If a dit was 1200ms long, you would transmit at 1 wpm.
 #define DIT (1200/WPM)
 #define SPACE_DIT (1200/WORD_WPM)
 
