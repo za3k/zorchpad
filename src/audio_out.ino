@@ -22,5 +22,5 @@ void loop() {
   unsigned long us = micros();
   if ((us % (BEEP_PERIOD*1000)) < (BEEP_PERIOD * 1000 * BEEP_DUTY / 100)) { // Beep every 1/2 second
     analogWrite(AUDIO_PIN, (us % PERIOD < PERIOD / 2) * 255); // Square wave
-  } else analogWrite(AUDIO_PIN, 0);
+  } else digitalWrite(AUDIO_PIN, 0);
 }
