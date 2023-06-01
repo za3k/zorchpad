@@ -39,7 +39,7 @@ void tone(int durationMs) { tone(durationMs, DEFAULT_FREQ); }
 #define dah tone(DIT*3); delay(DIT);
 // Called after dit or dah, for a total of 3 units
 #define letter_space delay(SPACE_DIT*3-DIT);
-// Called in addition to letter_space, for a total of 7 units
+// Called after dit or dah, for a total of 7 units
 #define word_space delay(SPACE_DIT*7-DIT);
 
 void sayMorse(char letter) {
