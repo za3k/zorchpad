@@ -17,6 +17,7 @@ Purchased list:
     - [Schematic][8]
     - [Integration Guide][9]
     - [Arduino Support][10]
+    - [Visual Guide to Features][19]
     - Works with Arduino IDE
     - [Arduino Setup][18]
 - $9.95 Ambiq Apollo3 SoC module. Sparkfun: [Sparkfun WRL-15484][2] (x2)
@@ -69,3 +70,4 @@ Purchased list:
 [17]: datasheets/Radio_Datasheet.pdf
 
 [18]: https://learn.sparkfun.com/tutorials/artemis-development-with-arduino/all
+[19]: https://learn.sparkfun.com/tutorials/hookup-guide-for-the-sparkfun-redboard-artemis?_ga=2.144615349.1802397571.1685735051-834523970.1683241202
