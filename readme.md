@@ -18,6 +18,7 @@ Purchased list:
     - [Integration Guide][9]
     - [Arduino Support][10]
     - Works with Arduino IDE
+    - [Arduino Setup][18]
 - $9.95 Ambiq Apollo3 SoC module. Sparkfun: [Sparkfun WRL-15484][2] (x2)
     - [Apollo3 Blue Datasheet][6] [(ambiq)][7]
     - [Cortex M4 Datasheet][18] [Tech Manual][19]
@@ -66,3 +67,5 @@ Purchased list:
 
 [17]: https://files.seeedstudio.com/products/317990687/res/LoRa-E5%20module%20datasheet_V1.0.pdf
 [17]: datasheets/Radio_Datasheet.pdf
+
+[18]: https://learn.sparkfun.com/tutorials/artemis-development-with-arduino/all
