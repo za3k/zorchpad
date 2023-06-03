@@ -3,7 +3,7 @@
   Add a font
 
   Draws some stuff on the screen to test.
-  
+
 */
 
 #include "SPI.h"
@@ -24,19 +24,21 @@
 #define VCOM_BIT 0x40
 
 enum {
-      glyph_width = 8,
-      glyph_height = 16,
-      font_line_bytes = (tamsyn8x16r_width + 7) / 8,
-      first_font_line = 3,
+  glyph_width = 8,
+  glyph_height = 16,
+  font_line_bytes = (tamsyn8x16r_width + 7) / 8,
+  first_font_line = 3,
 };
 
 
 static uint8_t vcom = 0;
-inline uint8_t toggle_vcom() { return vcom = vcom ? 0 : VCOM_BIT; } // Toggle black polarity so the screen doesn't degrade
+inline uint8_t toggle_vcom() {
+  return vcom = vcom ? 0 : VCOM_BIT;  // Toggle black polarity so the screen doesn't degrade
+}
 
 static unsigned char reverse_nibble[16] = { 0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe, 0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf, };
 uint8_t reverse_bits(uint8_t n) {
-   return (reverse_nibble[n&0x0f] << 4) | reverse_nibble[(n&0xf0)>>4];
+  return (reverse_nibble[n & 0x0f] << 4) | reverse_nibble[(n & 0xf0) >> 4];
 }
 
 void clearScreen() {
@@ -55,11 +57,11 @@ void drawBuffer() {
   digitalWrite(CS_PIN, HIGH);
   SPI.beginTransaction(SPISettings(SPI_FREQ, SPI_ORDER, SPI_MODE));
   SPI.transfer(0x80 | toggle_vcom()); // Multi-line, 1=white and 0=black
-  for (int y=0; y<SCREEN_HEIGHT; y++) {
-    uint8_t line_buffer[SCREEN_WIDTH_BYTES+2] = {0};
-    line_buffer[0] = reverse_bits(y+1);
-    memcpy(line_buffer+1, framebuffer[y], SCREEN_WIDTH_BYTES);
-    line_buffer[sizeof(line_buffer)-1] = 0x00;
+  for (int y = 0; y < SCREEN_HEIGHT; y++) {
+    uint8_t line_buffer[SCREEN_WIDTH_BYTES + 2] = {0};
+    line_buffer[0] = reverse_bits(y + 1);
+    memcpy(line_buffer + 1, framebuffer[y], SCREEN_WIDTH_BYTES);
+    line_buffer[sizeof(line_buffer) - 1] = 0x00;
     SPI.transfer(line_buffer, sizeof(line_buffer));
   }
   SPI.transfer(0x00);
@@ -68,10 +70,12 @@ void drawBuffer() {
 }
 
 void drawLetter(char c, int y, int x) {
-  int charIndex = c-32;
-  for (int r=0; r<16; r++) framebuffer[y*32+r][x]=~reverse_bits(tamsyn8x16r_bits[(tamsyn8x16r_width/8)*r+charIndex]);
+  int charIndex = c - 32;
+  for (int r = 0; r < 16; r++) framebuffer[y * 32 + r][x] = ~reverse_bits(tamsyn8x16r_bits[(tamsyn8x16r_width / 8) * r + charIndex]);
 }
-void drawLetter(char c, int pos) { drawLetter(c, pos/40, pos % 40+5); }
+void drawLetter(char c, int pos) {
+  drawLetter(c, pos / 40, pos % 40 + 5);
+}
 
 void drawText(char *text) {
   int pos = 0;
@@ -90,12 +94,12 @@ void setup() {
   SPI.begin();
   clearScreen();
 
-  memset(framebuffer, 0xff, SCREEN_HEIGHT*SCREEN_WIDTH_BYTES); // Clear the buffer to white
-  
+  memset(framebuffer, 0xff, SCREEN_HEIGHT * SCREEN_WIDTH_BYTES); // Clear the buffer to white
+
   // Draw a line to test
-  
-  for (int j=0; j<5; j++)
-  for (int i=0; i<100;i++) framebuffer[i][i/2+j] = (uint8_t) 0x00;
+
+  for (int j = 0; j < 5; j++)
+    for (int i = 0; i < 100; i++) framebuffer[i][i / 2 + j] = (uint8_t) 0x00;
   drawText("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVXYZ1234567890-=!@#$%^&*()_+[]{};':\",.<>/?~\\|~");
 }
 
