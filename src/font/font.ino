@@ -16,10 +16,14 @@
 
 #define SCREEN_HEIGHT 240
 #define SCREEN_WIDTH 400
-#define SCREEN_WIDTH_BYTES 50
-//((SCREEN_WIDTH+7)/8)
+#define BITS_TO_BYTES(x) ((x+7)/8)
+#define SCREEN_WIDTH_BYTES BITS_TO_BYTES(SCREEN_WIDTH)
 #define SCREEN_MIN 1
 #define SCREEN_MAX SCREEN_HEIGHT
+
+// We rely on GLYPH_WIDTH being 8 specifically in this code
+#define GLYPH_WIDTH 8
+#define GLYPH_HEIGHT 16
 
 #define VCOM_BIT 0x40
 
@@ -71,7 +75,7 @@ void drawBuffer() {
 
 void drawLetter(char c, int y, int x) {
   int charIndex = c - 32;
-  for (int r = 0; r < 16; r++) framebuffer[y * 16 + r][x] = tamsyn8x16r_bits[(tamsyn8x16r_width / 8) * r + charIndex];
+  for (int r = 0; r < GLYPH_HEIGHT; r++) framebuffer[y * GLYPH_HEIGHT + r][x] = tamsyn8x16r_bits[BITS_TO_BYTES(tamsyn8x16r_width) * r + charIndex];
 }
 void drawLetter(char c, int pos) { // 0 < pos <= 750
   drawLetter(c, pos / 50, pos % 50);
