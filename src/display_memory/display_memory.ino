@@ -77,11 +77,11 @@ void setup() {
   drawBuffer();
 
   //hexDump(0, 0x17f000); // Memory
-  hexDump(0x08000000, 0x08000FFF); // Boot loader ROM
+  hexDump(0x10000000ull, 0x1005FFFFull); // Boot loader ROM
 }
 
 // Flash/ROM goes 0x000 0000 - 0x1fff ffff  somewhere
-// RAM maybe 0x6000 0000 - 0x9fff ffff
+// RAM 0x10000000 to 0x1005FFFF
 // Flash goes 0x0000 0000 - 0xffff ffff somewhere
 
 void hexDump(unsigned long long minAddress, unsigned long long maxAddress) {
@@ -90,10 +90,10 @@ void hexDump(unsigned long long minAddress, unsigned long long maxAddress) {
   while (memoryPos < maxAddress) {
     for (int line = 0; line < 15; line++) {
       // Read bytes
-      unsigned long long *A = (unsigned long long*)(memoryPos<<4);
-      printf("Reading %08x", A);
+      unsigned long long *A = (unsigned long long*)memoryPos;
+      //printf("Reading %08x\n", A);
       unsigned long long D0 = *(A); // first 8 bytes
-      printf("Reading %08x", A+1);
+      //printf("Reading %08x\n", A+1);
       unsigned long long D1 = *(A+1); // second 8 bytes
       uint16_t d0 = D0&0xFFFF000000000000 >> 48,
                d1 = D0&0x0000FFFF00000000 >> 32,
