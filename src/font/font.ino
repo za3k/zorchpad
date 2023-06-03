@@ -71,10 +71,10 @@ void drawBuffer() {
 
 void drawLetter(char c, int y, int x) {
   int charIndex = c - 32;
-  for (int r = 0; r < 16; r++) framebuffer[y * 32 + r][x] = ~reverse_bits(tamsyn8x16r_bits[(tamsyn8x16r_width / 8) * r + charIndex]);
+  for (int r = 0; r < 16; r++) framebuffer[y * 16 + r][x] = tamsyn8x16r_bits[(tamsyn8x16r_width / 8) * r + charIndex];
 }
-void drawLetter(char c, int pos) {
-  drawLetter(c, pos / 40, pos % 40 + 5);
+void drawLetter(char c, int pos) { // 0 < pos <= 750
+  drawLetter(c, pos / 50, pos % 50);
 }
 
 void drawText(char *text) {
@@ -92,18 +92,12 @@ void setup() {
 
   // Clock and data out
   SPI.begin();
-  clearScreen();
-
+  
   memset(framebuffer, 0xff, SCREEN_HEIGHT * SCREEN_WIDTH_BYTES); // Clear the buffer to white
-
-  // Draw a line to test
-
-  for (int j = 0; j < 5; j++)
-    for (int i = 0; i < 100; i++) framebuffer[i][i / 2 + j] = (uint8_t) 0x00;
-  drawText("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVXYZ1234567890-=!@#$%^&*()_+[]{};':\",.<>/?~\\|~");
+  clearScreen();
 }
 
 void loop() {
-  //clearScreen();
+  drawText("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVXYZ1234567890-=!@#$%^&*()_+[]{};':\",.<>/?~\\|~");
   drawBuffer();
 }
