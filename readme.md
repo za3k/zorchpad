@@ -1,5 +1,13 @@
-Parts List
----
+## Arduino Sketches
+
+- `audio_out`: Basic beep, by rapidly toggling one pin
+- `demo_screen`: A general graphics demo for the SHARP memory
+- `display_ram`: Output the contents of memory to the serial console and the SHARP display.
+- `font`: Display text to the SHARP screen
+- `morse_out`: Output arbitrary text to audio using morse code
+- `sharp_memory_display`: Make something appear on the SHARP display
+
+## Parts List
 
 From muurkha:
 
