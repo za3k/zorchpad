@@ -1,7 +1,5 @@
 /*
   Cool on-screen demo.
-
-
 */
 
 #include "SPI.h"
@@ -54,12 +52,28 @@ void clearScreen() {
   delay(1);
 }
 
+void drawConstScreen(uint8_t pattern) { // 1=white and 0=black
+  digitalWrite(CS_PIN, HIGH);
+  SPI.beginTransaction(SPISettings(SPI_FREQ, SPI_ORDER, SPI_MODE));
+  SPI.transfer(0x80 | toggle_vcom()); // Multi-line
+  for (int y=SCREEN_MIN; y<=SCREEN_MAX; y++) {
+    uint8_t line_buffer[(SCREEN_WIDTH/8+2)];
+    line_buffer[0] = reverse_bits(y);
+    for (int i=1; i<=SCREEN_WIDTH/8; i++) line_buffer[i]=pattern;
+    line_buffer[sizeof(line_buffer)-1] = 0x00;
+    SPI.transfer(line_buffer, sizeof(line_buffer));
+  }
+  SPI.transfer(0x00);
+  SPI.endTransaction();
+  digitalWrite(CS_PIN, LOW);
+}
+
 uint8_t framebuffer[SCREEN_HEIGHT][SCREEN_WIDTH_BYTES];
-void drawBuffer() {
+void redrawLines(int yMin, int yMax) {
   digitalWrite(CS_PIN, HIGH);
   SPI.beginTransaction(SPISettings(SPI_FREQ, SPI_ORDER, SPI_MODE));
   SPI.transfer(0x80 | toggle_vcom()); // Multi-line, 1=white and 0=black
-  for (int y = 0; y < SCREEN_HEIGHT; y++) {
+  for (int y = yMin; y < yMax; y++) {
     uint8_t line_buffer[SCREEN_WIDTH_BYTES + 2] = {0};
     line_buffer[0] = reverse_bits(y + 1);
     memcpy(line_buffer + 1, framebuffer[y], SCREEN_WIDTH_BYTES);
@@ -71,11 +85,17 @@ void drawBuffer() {
   digitalWrite(CS_PIN, LOW);
 }
 
+void drawBuffer() {
+  redrawLines(0, SCREEN_HEIGHT);
+}
+
 void setPixel(int x, int y) {
-  framebuffer[x/8][y] = framebuffer[x/8][y] | (1 << (x%8));
+  if (x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT) return;
+  framebuffer[y][x/8] = framebuffer[y][x/8] & ~(1 << (x%8));
 }
 void clearPixel(int x, int y) {
-  framebuffer[x/8][y] = framebuffer[x/8][y] & ~(1 << (x%8));
+  if (x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT) return;
+  framebuffer[y][x/8] = framebuffer[y][x/8] | (1 << (x%8));
 }
 
 void drawLetter(char c, int y, int x) {
@@ -91,12 +111,17 @@ void drawText(char *text) {
   int x=0;
   int y=0;
   while (text[pos] != 0) {
-    x++;
-    if (x > 50) { x=0; y++; }
-    drawLetter(text[pos], y, x);
     if (text[pos] == '\n') { x=0; y++; }
+    else {
+      drawLetter(text[pos], y, x);
+      if (++x >= 50) { x=0; y++; }
+    }
     pos++;
   }
+}
+
+void redrawTextLine(int y) {
+  redrawLines(y*GLYPH_HEIGHT,y*GLYPH_HEIGHT+GLYPH_HEIGHT);
 }
 
 void setup() {
@@ -111,50 +136,57 @@ void setup() {
   clearScreen();
 }
 
-
-
 void demoBlank(int durationMs) {
   clearScreen();
   delay(durationMs);
 }
 
 void demoFlash(int durationMs) {
-  // TODO: Slowly speed up the strobe rate
   demoFlash(durationMs, 0);
 }
 void demoFlash(int durationMs, int periodMs) {
   int halfPeriodMs = periodMs / 2;
-  for (int i=0; i<durationMs/periodMs; i++) {
-    memset(framebuffer, 0x00, SCREEN_HEIGHT * SCREEN_WIDTH_BYTES);
-    drawBuffer();
-    delay(halfPeriodMs);
-    memset(framebuffer, 0xff, SCREEN_HEIGHT * SCREEN_WIDTH_BYTES);
-    drawBuffer();
+  int startTime = millis();
+  for (int t=0; millis() - startTime < durationMs; t++) {
+    drawConstScreen(t % 2 ? 0x00 : 0xff);
     delay(halfPeriodMs);
   }
 }
 void demoTyping(int durationMs, char *text) {
-  // TODO: Slowly speed up the typing rate
-  demoTyping(durationMs, 16, text);
+  memset(framebuffer, 0xff, SCREEN_HEIGHT * SCREEN_WIDTH_BYTES);
+  // Slowly speed up the typing rate
+  int pos = 0;
+  pos = demoTyping(durationMs / 8, 64, text, pos);
+  pos = demoTyping(durationMs / 8, 32, text, pos);
+  pos = demoTyping(durationMs / 8, 16, text, pos);
+  pos = demoTyping(durationMs / 8, 8, text, pos);
+  pos = demoTyping(durationMs / 8, 4, text, pos);
+  pos = demoTyping(durationMs / 8, 2, text, pos);
+  pos = demoTyping(durationMs / 8, 1, text, pos);
 }
-void demoTyping(int durationMs, int msPerChar, char *loopText) {
+
+void demoTyping(int durationMs, int msPerChar, char *loopText) { demoTyping(durationMs, msPerChar, loopText, 0); }
+int demoTyping(int durationMs, int msPerChar, char *loopText, int startPos) {
+  int startTime = millis();
   int textLen = strlen(loopText);
-  for (int i=0; i<=(textLen/msPerChar); i++) {
+  int i;
+  for (i=startPos; millis() - startTime < durationMs; i++) {
     if (i%750 == 0) clearScreen();
     drawLetter(loopText[i%textLen], i%750);
-    drawBuffer();
+    redrawTextLine((i%750)/50);
     delay(msPerChar);
-  }  
+  }
+  return i;
 }
 void demoMunchingSquares(int durationMs) {
-  // TODO: Slowly speed up the framerate
-  demoMunchingSquares(durationMs, 16);
+  demoMunchingSquares(durationMs, 0);
 }
 void demoMunchingSquares(int durationMs, int frameMs) {
-  for (int t=0; t<durationMs/frameMs; t++) {
-    memset(framebuffer, 0xff, SCREEN_HEIGHT * SCREEN_WIDTH_BYTES);
-    for (int x=0; x<400; x++) {
-      int y = x % t;
+  int startTime = millis();
+  memset(framebuffer, 0xff, SCREEN_HEIGHT * SCREEN_WIDTH_BYTES);
+  for (unsigned int t=0; millis() - startTime < durationMs; t++) {
+    for (unsigned int x=0; x<400; x++) {
+      unsigned int y = x ^ t;
       setPixel(x,y);
     }
     drawBuffer();
@@ -163,16 +195,21 @@ void demoMunchingSquares(int durationMs, int frameMs) {
 }
 
 void demoText(int durationMs, char *text) {
+  memset(framebuffer, 0xff, SCREEN_HEIGHT * SCREEN_WIDTH_BYTES);
   drawText(text);
+  drawBuffer();
   delay(durationMs);
 }
 
 void loop() {
-  demoText(1000, "\n\n\n    zorchpad alpha\n\n      graphics demo");
+  demoText(1000, 
+  "\n\n\n"
+  "                 zorchpad pre-alpha\n\n"                  // End of screen
+  "                 graphics demo");
   demoBlank(100);
-  demoFlash(500);
+  demoFlash(1000);
   demoBlank(100);
-  demoText(500, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVXYZ1234567890-=!@#$%^&*()_+[]{};':\",.<>/?~\\|~\nThe quick brown fox jumped over the lazy dog.\n");
-  demoMunchingSquares(2000);
-  demoTyping(1000, "The quick brown fox jumped over the lazy dog. ");
+  demoText(2000, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVXYZ1234567890-=!@#$%^&*()_+[]{};':\",.<>/?~\\|~\nThe quick brown fox jumped over the lazy dog.\n");
+  demoMunchingSquares(5000);
+  demoTyping(5000, "The quick brown fox jumped over the lazy dog. ");
 }
