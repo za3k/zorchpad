@@ -1,3 +1,13 @@
+## (WIP) Zemu
+The 'zorchpad emulator'. A basic C interface, abstracting the hardware of the zorchpad. Has a version which runs on the zorchpad and one that runs locally on PC for ease of development.
+
+- Set/unset pixel
+- Refresh screen
+- Play tone
+- Sleep (millis)
+- Get current held key (if queue disabled)
+- Get last pressed key (if queue enabled)
+
 ## Arduino Sketches
 
 - `audio_out`: Basic beep, by rapidly toggling one pin
