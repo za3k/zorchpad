@@ -42,14 +42,14 @@ void zw_set_pixel(zwin w, int x, int y, zpix value) {
 }
 
 void zw_flip(zwin w) {
-    //ypix *pxl = yp_pix(p, x, y);
-    //*pxl = colorize(value);
-    // TODO: Scale it up
     ypic p = yw_frame(w->ywin);
+    int w_scale = p.w / WIDTH_PX;
+    int h_scale = p.h / HEIGHT_PX;
+    int scale = w_scale < h_scale ? w_scale : h_scale;
     for (int y=0; y<HEIGHT_PX; y++) {
         for (int x=0; x<WIDTH_PX; x++) {
-           ypix *pixel = yp_pix(p, x, y);
-           *pixel = colorize(w->fb[x+y*WIDTH_PX]);
+           ypix color = colorize(w->fb[x+y*WIDTH_PX]);
+           yp_fill(yp_sub(p, x*scale, y*scale, scale, scale), color);
         }
     }
     yw_flip(w->ywin);
