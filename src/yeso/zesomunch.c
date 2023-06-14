@@ -6,19 +6,13 @@
 int main()
 {
   zwin w = zw_open();
-    zpic fb = zw_frame(w);
-    for (int y = 0; y < fb.h; y++) {
-        zp_set_pixel(fb, y, y, WHITE);
-    }
-    sleep(5);
-
-  /*
   for (int t = 0;; t++) {
-    zpic fb = zw_frame(w);
-    for (int y = 0; y < fb.h; y++) {
-      zp_set_pixel(fb, t ^ y, y, black);
+    for (int y = 0; y < HEIGHT_PX; y++) {
+      int x = t ^ y;
+      zpix cur = zw_get_pixel(w, x, y);
+      zw_set_pixel(w, x, y, cur ? 0 : 1);
     }
-    yw_flip(w);
+    zw_flip(w);
+    sleep(0.1);
   }
-  */
 }

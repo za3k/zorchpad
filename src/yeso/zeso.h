@@ -3,17 +3,21 @@
 #include <stdint.h>
 #include "yeso.h"
 
-typedef ywin zwin;
-typedef ypic zpic;
-typedef uint32_t zpix; // 0=black, 1=white
+typedef struct _zwin *zwin; // _zwin defined in zeso.c
+
 #define BLACK 0
 #define WHITE 1
+#define WIDTH_PX 400
+#define HEIGHT_PX 240
+typedef uint8_t zpix; // 0=black, 1=white
+typedef struct { zpix *p; int w, h; } zpic;
 
 zwin zw_open();
 void zw_close(zwin w);
 zpic zw_frame(zwin w);
-void zp_set_pixel(zpic p, int x, int y, zpix value);
+void zw_set_pixel(zwin p, int x, int y, zpix value);
+zpix zw_get_pixel(zwin p, int x, int y);
 void zw_flip(zwin w);
-void zp_fill(zpic p, zpix value);
+void zw_fill(zwin p, zpix value);
 
 #endif  /* ZESO_H_INCLUDED */
