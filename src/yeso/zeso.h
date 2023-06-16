@@ -26,4 +26,7 @@ void zw_fill(zwin w, zpix value);
 void zw_set_char(zwin w, int x, int y, char c, int style_bold);
 void zw_clear_char(zwin w, int x, int y);
 
+char zw_get_char(zwin w);
+uint32_t zw_get_key(zwin w);
+
 #endif  /* ZESO_H_INCLUDED */

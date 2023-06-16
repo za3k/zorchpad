@@ -12,8 +12,11 @@ struct _zwin {
   zpix *fb;
 };
 
+#define COLOR_FRAME 0xaaaaaa
+#define COLOR_WHITE 0x838383
+#define COLOR_BLACK 0x335343
 static inline ypix colorize(zpix value) {
-    return value ? 0x838383 : 0x335343;
+    return value ? COLOR_WHITE : COLOR_BLACK;
 }
 
 zwin zw_open() {
@@ -50,6 +53,7 @@ void zw_flip(zwin w) {
     int w_scale = p.w / WIDTH_PX;
     int h_scale = p.h / HEIGHT_PX;
     int scale = w_scale < h_scale ? w_scale : h_scale;
+    yp_fill(p, COLOR_FRAME);
     for (int y=0; y<HEIGHT_PX; y++) {
         for (int x=0; x<WIDTH_PX; x++) {
            ypix color = colorize(w->fb[x+y*WIDTH_PX]);
@@ -90,4 +94,30 @@ void zw_set_char(zwin w, int x, int y, char ch, int style_bold) {
 }
 void zw_clear_char(zwin w, int x, int y) {
     zw_set_char(w, x, y, 0, 0);
+}
+
+char zw_get_char(zwin w) {
+    while (1) {
+		yw_wait(w->ywin, 0); // TODO: Deal with stuff like Control-C
+		yw_event *e1 = yw_get_event(w->ywin);
+		if (!e1) continue;
+		yw_key_event *e = yw_as_key_event(e1);
+		if (!e) continue;
+		if (!e->down) continue;
+		if (!e->s) continue;
+		return e->s[0];
+	}
+}
+
+uint32_t zw_get_key(zwin w) {
+    while (1) {
+		yw_wait(w->ywin, 0);
+		yw_event *e1 = yw_get_event(w->ywin);
+		if (!e1) continue;
+		yw_key_event *e = yw_as_key_event(e1);
+		if (!e) continue;
+		if (!e->down) continue;
+		if (!e->s) continue;
+		return e->keysym;
+	}
 }
