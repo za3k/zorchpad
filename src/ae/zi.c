@@ -10,6 +10,7 @@
 #include <curses.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include "zeso.h"
 
 int done;
 int row, col;
