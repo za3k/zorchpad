@@ -1,6 +1,10 @@
 #include "zeso.h"
 #include <stdlib.h>
 #include <string.h>
+#include "yeso.h"
+#include "tamsyn8x16r.h"
+#include "tamsyn8x16b.h"
+#define BITS_TO_BYTES(x) ((x+7)/8)
 
 // The destination type of the opaque pointer type zwin, declared but not defined in zeso.h
 struct _zwin {
@@ -57,4 +61,33 @@ void zw_flip(zwin w) {
 
 void zw_fill(zwin p, zpix value) {
     memset(p->fb, value, WIDTH_PX*HEIGHT_PX*sizeof(zpix));
+}
+
+void zw_set_char(zwin w, int x, int y, char ch, int style_bold) {
+    if (x < 0 || y < 0 || x >= WIDTH_CHAR || y >= HEIGHT_CHAR) return;
+    int charIndex = ch <= 32 ? 0 : ch - 32;
+    if (style_bold) {
+        for (int row = 0; row < GLYPH_HEIGHT; row++) {
+            for (int col = 0; col < GLYPH_WIDTH; col++) {
+                zw_set_pixel(w,
+                  x*GLYPH_WIDTH+col,
+                  y*GLYPH_HEIGHT+row,
+                  tamsyn8x16b_bits[BITS_TO_BYTES(tamsyn8x16b_width) * row + charIndex] & (0x1 << col)
+                );
+            }
+        }
+    } else {
+        for (int row = 0; row < GLYPH_HEIGHT; row++) {
+            for (int col = 0; col < GLYPH_WIDTH; col++) {
+                zw_set_pixel(w,
+                  x*GLYPH_WIDTH+col,
+                  y*GLYPH_HEIGHT+row,
+                  tamsyn8x16r_bits[BITS_TO_BYTES(tamsyn8x16r_width) * row + charIndex] & (0x80 >> col)
+                );
+            }
+        }
+    }
+}
+void zw_clear_char(zwin w, int x, int y) {
+    zw_set_char(w, x, y, 0, 0);
 }

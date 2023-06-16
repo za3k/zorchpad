@@ -1,7 +1,8 @@
 CFLAGS = -Wall -Werror -std=gnu99 -g -Os
 
-ZESO_PROGS = zesomunch
+ZESO_PROGS = zesomunch helloworld
 LXLIB = -L. -lzeso -lX11 -lXext
+ZESO_DEPS = libzeso.a zeso.h
 
 all: $(ZESO_PROGS)
 
@@ -10,5 +11,7 @@ clean:
 
 libzeso.a: zeso.o yeso.o
 	ar rcsDv $@ $^
-zesomunch: zesomunch.o libzeso.a zeso.h
-	$(CC) $(CFLAGS) -o $@ zesomunch.o $(LXLIB)
+zesomunch: zesomunch.o $(ZESO_DEPS)
+	$(CC) $(CFLAGS) -o $@ $< $(LXLIB)
+helloworld: helloworld.o $(ZESO_DEPS)
+	$(CC) $(CFLAGS) -o $@ $< $(LXLIB)
