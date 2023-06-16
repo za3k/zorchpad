@@ -7,7 +7,6 @@
  */
 
 #include <ctype.h>
-#include <curses.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include "zeso.h"
@@ -20,6 +19,7 @@ char *ebuf;
 char *gap = buf;
 char *egap;
 char *filename;
+static zwin w;
 
 /*
  *	The following assertions must be maintained.
@@ -83,6 +83,42 @@ void up();
 void wleft();
 void wright();
 
+
+int x=0, y=0;
+void clear() {
+    zw_fill(w, 0);
+}
+void refresh() {
+    zw_flip(w);
+}
+#define LINES HEIGHT_CHAR
+#define COLS WIDTH_CHAR
+void addch(char c) {
+    zw_set_char(w, x, y, c, 0);
+    x++;
+    if (x >= COLS) { x=0; y++; }
+    if (y >= LINES) { x = LINES-1; } // Oops! no scrolling :P
+}
+void move(int ny, int nx) {
+    x=nx;
+    y=ny;
+}
+void mvaddstr(int y, int x, char *s) {
+    move(y,x);
+    while (*s!='\0') addch(*s);
+}
+void clrtobot() {
+    while (y < LINES-1 || x < COLS-1) addch(0); // Haha yuck
+    addch(0);
+}
+#include <stdio.h>
+char getch() {
+    char c = zw_get_char(w);
+    printf("Char read: %c\n", c);
+    return c;
+}
+
+
 char key[] = "hjklHJKL[]tbixWRQ";
 void (*func[])() = {
 	left, down, up, right, 
@@ -91,50 +127,35 @@ void (*func[])() = {
 	insert, delete, file, redraw, quit, movegap
 };
 
-char *
-ptr(offset)
-int offset;
-{
+char * ptr(int offset) {
 	if (offset < 0)
 		return (buf);
 	return (buf+offset + (buf+offset < gap ? 0 : egap-gap));
 }
 
-int
-pos(pointer)
-char *pointer;
-{
+int pos(char *pointer) {
 	return (pointer-buf - (pointer < egap ? 0 : egap-gap)); 
 }
 
-void
-top()
-{
+void top() {
 	index = 0;
 }
 
-void
-bottom()
-{
+void bottom() {
 	epage = index = pos(ebuf);
 }
 
-void
-quit()
-{
+void quit() {
 	done = 1;
 }
 
-void
-redraw()
-{
+
+void redraw() {
 	clear();
 	display();
 }
 
-void
-movegap()
-{
+void movegap() {
 	char *p = ptr(index);
 	while (p < gap)
 		*--egap = *--gap;
@@ -143,30 +164,20 @@ movegap()
 	index = pos(egap);
 }
 
-int
-prevline(offset)
-int offset;
-{
+int prevline(int offset) {
 	char *p;
-	while (buf < (p = ptr(--offset)) && *p != '\n')
-		;
+	while (buf < (p = ptr(--offset)) && *p != '\n') {}
 	return (buf < p ? ++offset : 0);
 }
 
-int
-nextline(offset)
-int offset;
-{
+int nextline(int offset) {
 	char *p;
 	while ((p = ptr(offset++)) < ebuf && *p != '\n')	
 		;
 	return (p < ebuf ? offset : pos(ebuf));
 }
 
-int
-adjust(offset, column)
-int offset, column;
-{
+int adjust(int offset, int column) {
 	char *p;
 	int i = 0;
 	while ((p = ptr(offset)) < ebuf && *p != '\n' && i < column) {
@@ -176,48 +187,34 @@ int offset, column;
 	return (offset);
 }
 
-void
-left()
-{
+void left() {
 	if (0 < index)
 		--index;
 } 
 
-void
-right()
-{
+void right() {
 	if (index < pos(ebuf))
 		++index;
 }
 
-void
-up()
-{
+void up() {
 	index = adjust(prevline(prevline(index)-1), col);
 }
 
-void
-down()
-{
+void down() {
 	index = adjust(nextline(index), col);
 }
 
-void
-lnbegin()
-{
+void lnbegin() {
 	index = prevline(index);
 }
 
-void
-lnend()
-{
+void lnend() {
 	index = nextline(index);
 	left();
 }
 
-void
-wleft()
-{
+void wleft() {
 	char *p;
 	while (!isspace(*(p = ptr(index))) && buf < p)
 		--index;
@@ -225,18 +222,14 @@ wleft()
 		--index;
 }
 
-void
-pgdown()
-{
+void pgdown() {
 	page = index = prevline(epage-1);
 	while (0 < row--)
 		down();
 	epage = pos(ebuf);
 }
 
-void
-pgup()
-{
+void pgup() {
 	int i = LINES;
 	while (0 < --i) {
 		page = prevline(page-1); 
@@ -244,9 +237,7 @@ pgup()
 	}
 }
 
-void
-wright()
-{
+void wright() {
 	char *p;
 	while (!isspace(*(p = ptr(index))) && p < ebuf)
 		++index;
@@ -254,9 +245,7 @@ wright()
 		++index;
 }
 
-void
-insert()
-{
+void insert() {
 	int ch;
 	movegap();
 	while ((ch = getch()) != '\f') {
@@ -271,17 +260,13 @@ insert()
 	}
 }
 
-void
-delete()
-{
+void delete() {
 	movegap();
 	if (egap < ebuf)
 		index = pos(++egap);
 }
 
-void
-file()
-{
+void file() {
 	int i;
 	int j = index;
 	index = 0;
@@ -291,9 +276,7 @@ file()
 	index = j;
 }
 
-void
-display()
-{
+void display() {
 	char *p;
 	int i, j;
 	if (index < page)
@@ -332,19 +315,12 @@ display()
 	refresh();
 }
 
-int
-main(argc, argv)
-int argc;
-char **argv;
-{
+int main(int argc, char **argv) {
 	int ch, i;
+    w = zw_open();
 	egap = ebuf = buf + BUF;
 	if (argc < 2)
 		return (2);
-	initscr();
-	raw();
-	noecho();
-	idlok(stdscr, 1);
 	if (0 < (i = open(filename = *++argv, 0))) {
 		gap += read(i, buf, BUF);
 		if (gap < buf)
@@ -360,6 +336,5 @@ char **argv;
 			++i;
 		(*func[i])();
 	}
-	endwin();
 	return (0);
 }
