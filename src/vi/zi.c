@@ -95,9 +95,13 @@ void refresh() {
 #define COLS WIDTH_CHAR
 void addch(char c) {
     zw_set_char(w, x, y, c, 0);
-    x++;
-    if (x >= COLS) { x=0; y++; }
-    if (y >= LINES) { x = LINES-1; } // Oops! no scrolling :P
+    ++x;
+    if (c == '\n' || x >= COLS) {
+        x=0;
+        if (++y >= LINES) {
+            y = LINES-1; // Oops! no scrolling :P
+        }
+    }
 }
 void move(int ny, int nx) {
     x=nx;
@@ -105,7 +109,7 @@ void move(int ny, int nx) {
 }
 void mvaddstr(int y, int x, char *s) {
     move(y,x);
-    while (*s!='\0') addch(*s);
+    while (*s!='\0') addch(*s++);
 }
 void clrtobot() {
     while (y < LINES-1 || x < COLS-1) addch(0); // Haha yuck
