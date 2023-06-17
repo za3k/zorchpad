@@ -6,6 +6,8 @@
 #include "tamsyn8x16b.h"
 #define BITS_TO_BYTES(x) ((x+7)/8)
 
+#include <stdio.h>
+
 // The destination type of the opaque pointer type zwin, declared but not defined in zeso.h
 struct _zwin {
   ywin ywin;
@@ -98,26 +100,22 @@ void zw_clear_char(zwin w, int x, int y) {
 
 char zw_get_char(zwin w) {
     while (1) {
-		yw_wait(w->ywin, 0); // TODO: Deal with stuff like Control-C
-		yw_event *e1 = yw_get_event(w->ywin);
-		if (!e1) continue;
-		yw_key_event *e = yw_as_key_event(e1);
+		yw_wait(w->ywin, 0);
+		yw_key_event *e = yw_as_key_event(yw_get_event(w->ywin));
 		if (!e) continue;
 		if (!e->down) continue;
 		if (!e->s) continue;
+        //if (e->keysym >= 1ull<<32) continue; // Ignore Control-Keys
 		return e->s[0];
 	}
 }
 
-uint32_t zw_get_key(zwin w) {
+uint64_t zw_get_key(zwin w) {
     while (1) {
 		yw_wait(w->ywin, 0);
-		yw_event *e1 = yw_get_event(w->ywin);
-		if (!e1) continue;
-		yw_key_event *e = yw_as_key_event(e1);
+		yw_key_event *e = yw_as_key_event(yw_get_event(w->ywin));
 		if (!e) continue;
 		if (!e->down) continue;
-		if (!e->s) continue;
 		return e->keysym;
 	}
 }

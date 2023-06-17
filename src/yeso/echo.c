@@ -8,7 +8,7 @@ int main()
 {
   zwin w = zw_open();
   int y=0, x=0;
-  char in;
+  uint64_t in;
   zw_flip(w);
   while ((in=zw_get_key(w))!=0) {
     zw_set_char(w, x, y, in, 0);
