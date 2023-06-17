@@ -1,14 +1,15 @@
-// cc -Dindex=index_ptr -DBUF=4096 -DMODE=0666 -Os zi.c -o zi -lncurses
-
 /*
  *	ae.c		Anthony's Editor  IOCCC '91
  *
  *	Public Domain 1991 by Anthony Howe.  All rights released.
+ *
+ *  Adapted for the Zorchpad emulator in 2023 by Zachary Vance.
  */
 
 #include <ctype.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdint.h>
 #include "zeso.h"
 
 int done;
@@ -116,14 +117,16 @@ void clrtobot() {
     addch(0);
 }
 #include <stdio.h>
-char getch() {
-    char c = zw_get_char(w);
-    printf("Char read: %c\n", c);
+uint64_t getch() {
+    uint64_t c = zw_get_key(w);
     return c;
 }
 
 
-char key[] = "hjklHJKL[]tbixWRQ";
+uint64_t key[] = {
+    'h', 'j', 'k', 'l', 'H', 'J', 'K', 'L', '[', ']', 't', 'b', 'i', 'x', 'W', 'R', 'Q'
+};
+
 void (*func[])() = {
 	left, down, up, right, 
 	wleft, pgdown, pgup, wright,
@@ -249,15 +252,23 @@ void wright() {
 		++index;
 }
 
+int is_printable(uint64_t keysym) {
+    return keysym >= 0x20 && keysym < 0x7F;
+}
+
 void insert() {
-	int ch;
+	uint64_t ch;
 	movegap();
-	while ((ch = getch()) != '\f') {
-		if (ch == '\b') {
+	while ((ch = getch()) != zk_ctrl_l) {
+		if (ch == zk_backspace) {
 			if (buf < gap)
 				--gap;
 		} else if (gap < egap) {
-			*gap++ = ch == '\r' ? '\n' : ch;
+            if (is_printable(ch)) {
+			    *gap++ = ch;
+            } else if (ch == zk_enter) {
+			    *gap++ = '\n';
+            }
 		}
 		index = pos(egap);
 		display();
@@ -320,7 +331,8 @@ void display() {
 }
 
 int main(int argc, char **argv) {
-	int ch, i;
+	int i;
+    uint64_t ch;
     w = zw_open();
 	egap = ebuf = buf + BUF;
 	if (argc < 2)
@@ -336,8 +348,7 @@ int main(int argc, char **argv) {
 		display();
 		i = 0; 
 		ch = getch(); 
-		while (key[i] != '\0' && ch != key[i])
-			++i;
+		while (key[i] != 0 && ch != key[i]) ++i;
 		(*func[i])();
 	}
 	return (0);
