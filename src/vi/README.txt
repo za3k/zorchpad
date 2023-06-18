@@ -1,6 +1,6 @@
-The original ae.c was written by Anthony Howe and released into the public domain.
+The original ae.c was written by Anthony Howe and released into the public domain. It is available as 'ae'.
 
-This version is adapted to work with the zorchpad (use raw keyboard input and video output).
+The 'zi' version is adapted to work with the zorchpad (use raw keyboard input and video output).
 
 Keys
 
@@ -13,6 +13,6 @@ i		insert (ctrl-L exits)
 x		delete character
 W		save file
 R		redraw
-Q		quix
+Q		quit
 
 other	movegap
