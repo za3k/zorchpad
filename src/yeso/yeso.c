@@ -376,13 +376,24 @@ process_pending_event(ywin w)
     ev->body.mouse.buttons ^= 1 << (bev->button - 1);
 
   } else if (type == KeyPress || type == KeyRelease) {
-    yw_key_event kev = { .s = &w->keybuf[0], .down = (type == KeyPress) };
+    XKeyEvent *kev = &w->xevent.xkey;
+    yw_key_event ykev = { .s = &w->keybuf[0], .down = (type == KeyPress) };
     KeySym keysym;
-    kev.len = XLookupString(&w->xevent.xkey, kev.s, sizeof(w->keybuf)-1, &keysym, NULL);
-    kev.s[kev.len] = 'E';
-    kev.keysym = keysym;
+    ykev.len = XLookupString(kev, ykev.s, sizeof(w->keybuf)-1, &keysym, NULL);
+    ykev.s[ykev.len] = 'E';
+    ykev.keysym = keysym;
+    if (
+        kev->state & ControlMask &&  // If ctrl is held
+        (ykev.keysym != yk_control_l && ykev.keysym != yk_control_r)) 
+    {
+        ykev.keysym |= 1ull<<32; // Act like it's a special new key
+        ykev.len += 2;
+        strcpy(ykev.s+2, ykev.s);
+        ykev.s[0]='C';
+        ykev.s[1]='-';
+    }
     ev->type = yw_key;
-    ev->body.key = kev;
+    ev->body.key = ykev;
 
   } else if (type == ClientMessage) {
     XClientMessageEvent *cm = &w->xevent.xclient;
@@ -440,19 +451,19 @@ yw_get_event(ywin w)
 yw_mouse_event *
 yw_as_mouse_event(yw_event *ev)
 {
-  return (ev->type == yw_mouse) ? &ev->body.mouse : NULL;
+  return (ev && ev->type == yw_mouse) ? &ev->body.mouse : NULL;
 }
 
 yw_key_event *
 yw_as_key_event(yw_event *ev)
 {
-  return (ev->type == yw_key) ? &ev->body.key : NULL;
+  return (ev && ev->type == yw_key) ? &ev->body.key : NULL;
 }
 
 yw_raw_event *
 yw_as_raw_event(yw_event *ev)
 {
-  return (ev->type == yw_raw) ? &ev->body.raw : NULL;
+  return (ev && ev->type == yw_raw) ? &ev->body.raw : NULL;
 }
 
 yw_die_event
@@ -471,6 +482,7 @@ yw_as_die_event(yw_event *ev)
      ICCCM, I'm almost certain of it — but at least marco, the MATE
      window manager, handles it fine.
    */
+  if (!ev) return 0;
   ywin w = ev->w;
   if (!w->handles_die) {
     if (!XSetWMProtocols(w->display, w->window, &w->WM_DELETE_WINDOW, 1)) {

@@ -122,7 +122,7 @@ yw_mouse_event *yw_as_mouse_event(yw_event *);
 
 typedef struct {
   char *s;               /* pointer to UTF-8 bytes generated */
-  uint32_t keysym;       /* X11 standard (?) keysym */
+  uint64_t keysym;       /* X11 standard (?) keysym (+ bit 32 if ctrl held) */
   uint8_t down;          /* 0 if this is a keyup, 1 if keydown */
   uint8_t len;           /* number of bytes in string s */
 } yw_key_event;
