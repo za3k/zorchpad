@@ -11,7 +11,7 @@ int main()
   uint64_t in;
   zw_flip(w);
   while ((in=zw_get_key(w))!=0) {
-    zw_set_char(w, x, y, in, 0);
+    zw_set_char(w, x, y, in, 0, 0);
 	if ((x=(x+1)%WIDTH_CHAR) == 0) {
 		y=(y+1)%HEIGHT_CHAR;
     }

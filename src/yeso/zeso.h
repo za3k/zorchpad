@@ -23,10 +23,9 @@ zpix zw_get_pixel(zwin w, int x, int y);
 void zw_flip(zwin w);
 void zw_fill(zwin w, zpix value);
 
-void zw_set_char(zwin w, int x, int y, char c, int style_bold);
+void zw_set_char(zwin w, int x, int y, char c, int style_bold, int invert);
 void zw_clear_char(zwin w, int x, int y);
 
-char zw_get_char(zwin w);
 uint64_t zw_get_key(zwin w);
 
 // keysyms for a typical keyboard
