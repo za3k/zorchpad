@@ -87,7 +87,7 @@ void wright();
 
 int x=0, y=0;
 void clear() {
-    zw_fill(w, 0);
+    zw_fill(w, WHITE);
 }
 void refresh() {
     zw_flip(w);
@@ -124,14 +124,19 @@ uint64_t getch() {
 
 
 uint64_t key[] = {
-    'h', 'j', 'k', 'l', 'H', 'J', 'K', 'L', '[', ']', 't', 'b', 'i', 'x', 'W', 'R', 'Q'
+    'h', 'j', 'k', 'l',
+    'H', 'J', 'K', 'L',
+    '[', ']', 't', 'b',
+    'i', 'x', 'W', 'R',
+    'Q'
 };
 
 void (*func[])() = {
 	left, down, up, right, 
 	wleft, pgdown, pgup, wright,
 	lnbegin, lnend, top, bottom, 
-	insert, delete, file, redraw, quit, movegap
+	insert, delete, file, redraw,
+    quit, movegap
 };
 
 char * ptr(int offset) {
@@ -345,7 +350,7 @@ int main(int argc, char **argv) {
 	}
 	top();
 	while (!done) {
-		display();
+		redraw();
 		i = 0; 
 		ch = getch(); 
 		while (key[i] != 0 && ch != key[i]) ++i;
