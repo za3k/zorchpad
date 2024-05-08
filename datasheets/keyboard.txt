@@ -1,0 +1,8 @@
+I got a little 4x4 keyboard. It has these pins:
+
+Left <-> Right (overhead looking at screen)
+
+0  1  2  3  4  5  6  7
+C3 R0 R1 R2 R3 C0 C1 C2
+
+Connections are normally all open, until a button is pressed.
