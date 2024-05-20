@@ -1,0 +1,23 @@
+
+    37 or 50 GPIO pins?
+Available (small package)
+    BTLE
+    33 pins (?)
+Available (large package)
+    22 pins (?)
+
+Requirements:
+
+    9 pins (9 IO) - keyboard
+    0 pins - power input
+    7 pins (5 out, 2 IO) - SPI
+        4 devices: Screen 1, Screen 2, MicroSD, E-ink
+        4x chip select, 1 clock, 1 MOSI, 1 MISO
+    2 pins (2 out) - Headphones
+    0 pins - Microphone (integrated)
+    GPIO (3 IO?)
+        (shared clock with SPI)
+
+21 pins total (7 out-only, 14 IO, 0 in)
+
+

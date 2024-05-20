@@ -1,0 +1,7 @@
+Charlieplexing to control LEDs
+    say you have 6 controls. Wire the complete graph (15 undirected connections), with one LED facing each direction on each edge (30 LEDs). You can control the LEDs with tri-state logic. Set one pin to OUT, one to IN, and the rest to DISCONNECTED.
+
+Charlieplexing for inputs with diodes
+    Same thing
+
+65 keys (4 blank) -- need 9 wires to read with N-key-rollover [72]
