@@ -9,77 +9,25 @@ import math
 ⌃_ ⌘ ⌥_ ␣___________ f ← ↓ →
 """
 
-layout = [[
-    ["ESC", "", 1],
-    ["1", "!", 1],
-    ["2", "@", 1],
-    ["3", "#", 1],
-    ["4", "$", 1],
-    ["5", "%", 1],
-    ["6", "^", 1],
-    ["7", "&", 1],
-    ["8", "*", 1],
-    ["9", "(", 1],
-    ["0", ")", 1],
-    ["-", "_", 1],
-    ["=", "+", 1],
-    ["Backspace", "", 1.5],
-],[
-    ["Tab", "", 1.5],
-    ["Q", "", 1],
-    ["W", "", 1],
-    ["E", "", 1],
-    ["R", "", 1],
-    ["T", "", 1],
-    ["Y", "", 1],
-    ["U", "", 1],
-    ["I", "", 1],
-    ["O", "", 1],
-    ["P", "", 1],
-    ["[", "{", 1],
-    ["]", "}", 1],
-    ["\\", "|", 1],
-],[
-    ["Caps Lock", "", 2],
-    ["A", "", 1],
-    ["S", "", 1],
-    ["D", "", 1],
-    ["F", "", 1],
-    ["G", "", 1],
-    ["H", "", 1],
-    ["J", "", 1],
-    ["K", "", 1],
-    ["L", "", 1],
-    [";", ":", 1],
-    ["'", "\"", 1],
-    ["↵", "", 1.5],
-],[
-    ["", "", 1],
-    ["Shift", "", 1.5],
-    ["Z", "", 1],
-    ["X", "", 1],
-    ["C", "", 1],
-    ["V", "", 1],
-    ["B", "", 1],
-    ["N", "", 1],
-    ["M", "", 1],
-    [",", "<", 1],
-    [".", ">", 1],
-    ["/", "?", 1],
-    ["↑", "", 1],
-    ["", "", 1],
-],[
-    ["Fn", "", 1],
-    ["Ctrl", "", 1.5],
-    ["⊞", "", 1],
-    ["Alt", "", 1],
-    ["", "", 5],
-    ["", "", 1],
-    ["", "", 1],
-    ["↑", "", 1],
-    ["↑", "", 1],
-    ["↑", "", 1],
-]]
+layout = [
+    ["ESC", "!\n1", "@\n2", "#\n3", "$\n4", "%\n5", "^\n6", "&\n7", "*\n8", "(\n9", ")\n0", "_\n-", "+\n=", ("Backspace", 1.5),],
+    [("Tab", 1.5), "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "{\n[", "{\n]", "|\n\\",],
+    [("Caps Lock", 2), "A", "S", "D", "F", "G", "H", "J", "K", "L", ":\n;", "\"\n'", ("↵", 1.5),],
+    ["", ("Shift", 1.5), "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "↑", "",],
+    [ "Fn", ("Ctrl", 1.5), "OS", "Alt", (" ", 5), "", "", "↑", "↑", "↑", ]
+]
+
+def parse_key(d):
+    if isinstance(d, tuple):
+        text, w = d
+    else:
+        text, w = d, 1.0
+    lines = text.split("\n")
+    if len(lines) == 2:
+        l1, l2 = lines
+    else:
+        l1, l2 = lines[0], ""
+    return l1, l2, w
 
 def font_for(l):
     if len(l) == 1:
@@ -114,15 +62,18 @@ if __name__ == "__main__":
     img = Image.new("RGB", (int(300*PPMM), int(200*PPMM)), "white")
             
     y = BORDER*PPMM
+    maxx = 0
     for row in layout:
         x = BORDER*PPMM
-        for l1, l2, width in row:
+        for d in row:
+            l1, l2, width = parse_key(d)
             key_width, key_height = KEY_PITCH*width - KEY_SPACING, KEY_PITCH - KEY_SPACING
             print_key(img, x, y, key_width, key_height, l1, l2)
             x += width * KEY_PITCH
         y += KEY_PITCH
+        maxx = max(maxx, x)
     y += BORDER*PPMM - KEY_SPACING
-    x += BORDER*PPMM - KEY_SPACING
-    img = img.crop((0,0,int(x*PPMM),int(y*PPMM)))
+    maxx += BORDER*PPMM - KEY_SPACING
+    img = img.crop((0,0,int(maxx*PPMM),int(y*PPMM)))
     img.show()
     img.save("keyboard.png")
