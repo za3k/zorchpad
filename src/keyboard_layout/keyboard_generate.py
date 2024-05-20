@@ -9,12 +9,21 @@ import math
 ⌃_ ⌘ ⌥_ ␣___________ f ← ↓ →
 """
 
-layout = [
-    ["ESC", "!\n1", "@\n2", "#\n3", "$\n4", "%\n5", "^\n6", "&\n7", "*\n8", "(\n9", ")\n0", "_\n-", "+\n=", ("Backspace", 1.5),],
-    [("Tab", 1.5), "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "{\n[", "{\n]", "|\n\\",],
-    [("Caps Lock", 2), "A", "S", "D", "F", "G", "H", "J", "K", "L", ":\n;", "\"\n'", ("↵", 1.5),],
-    ["", ("Shift", 1.5), "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "↑", "",],
-    [ "Fn", ("Ctrl", 1.5), "OS", "Alt", (" ", 5), "", "", "↑", "↑", "↑", ]
+layouts = [
+    [
+        ["ESC", "!\n1", "@\n2", "#\n3", "$\n4", "%\n5", "^\n6", "&\n7", "*\n8", "(\n9", ")\n0", "_\n-", "+\n=", ("Backspace", 1.5),],
+        [("Tab", 1.5), "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "{\n[", "{\n]", "|\n\\",],
+        [("Caps Lock", 2), "A", "S", "D", "F", "G", "H", "J", "K", "L", ":\n;", "\"\n'", ("↵", 1.5),],
+        ["", ("Shift", 1.5), "Z", "X", "C", "V", "B", "N", "M", "<\n,", ">\n.", "?\n/", "↑", "",],
+        [ "Fn", ("Ctrl", 1.5), "OS", "Alt", (" ", 5), "", "", "←", "↓", "→", ]
+    ],
+    [ # 12 keys wide. Missing: `~, [{, ]}, \|, F1-12, DEL, Sys/Home/End/Ins/PrtSc
+        ["!\n1", "@\n2", "#\n3", "$\n4", "%\n5", "^\n6", "&\n7", "*\n8", "(\n9", ")\n0", "_\n-", "+\n=",],
+        [("Tab", 1), "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P","←"],
+        [("Esc", 1), "A", "S", "D", "F", "G", "H", "J", "K", "L", ":\n;", "\"\n'",],
+        [("Shift", 1), "Z", "X", "C", "V", "B", "N", "M", "<\n,", ">\n.", "↑", "?\n/"],
+        [("Ctrl", 1), "Os", "Alt", (" ", 2.5), ("↵", 2.5), "Fn", "←", "↓", "→",]
+    ],
 ]
 
 def parse_key(d):
@@ -24,7 +33,7 @@ def parse_key(d):
         text, w = d, 1.0
     lines = text.split("\n")
     if len(lines) == 2:
-        l1, l2 = lines
+        l2, l1 = lines
     else:
         l1, l2 = lines[0], ""
     return l1, l2, w
@@ -35,7 +44,7 @@ def font_for(l):
     else:
         return ImageFont.truetype("DejaVuSans.ttf", 10)
 def print_key(im, x_mm, y_mm, w_mm, h_mm, l1, l2):
-    draw = ImageDraw.Draw(img)
+    draw = ImageDraw.Draw(im)
 
     # draw rectangle
     W,H=w_mm*PPMM,h_mm*PPMM
@@ -58,11 +67,12 @@ KEY_PITCH = 15 # mm
 KEY_SPACING = 1 # mm
 BORDER = 0.5 # mm
 PPMM = 2.8 # pixels per mm
-if __name__ == "__main__":
+def generate_layout(layout):
     img = Image.new("RGB", (int(300*PPMM), int(200*PPMM)), "white")
             
     y = BORDER*PPMM
     maxx = 0
+    keys = 0
     for row in layout:
         x = BORDER*PPMM
         for d in row:
@@ -70,10 +80,17 @@ if __name__ == "__main__":
             key_width, key_height = KEY_PITCH*width - KEY_SPACING, KEY_PITCH - KEY_SPACING
             print_key(img, x, y, key_width, key_height, l1, l2)
             x += width * KEY_PITCH
+            keys += 1
         y += KEY_PITCH
         maxx = max(maxx, x)
     y += BORDER*PPMM - KEY_SPACING
     maxx += BORDER*PPMM - KEY_SPACING
     img = img.crop((0,0,int(maxx*PPMM),int(y*PPMM)))
+    return img, keys
+
+if __name__ == "__main__":
+    for layout in layouts:
+        img, keys = generate_layout(layout)
+        img.save("keyboard{}.png".format(keys))
     img.show()
-    img.save("keyboard.png")
+
