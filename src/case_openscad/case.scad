@@ -1,4 +1,5 @@
 // TODO: Add hinge
+// TODO: rounded_linear_extrude
 
 keyboard_thickness = 4.8;
 
@@ -195,6 +196,7 @@ module keyboard_plate() {
             bottom_screw_holes();
         }
     }
+    handle_bottom();
 }
 
 module rounded_thing(w, h, d) {
@@ -237,6 +239,7 @@ module remove_cutout(thing, cut) {
 }
     
 module top_plate() {
+    union() {
     difference() {
         remove_cutout() {
             difference() {
@@ -255,6 +258,9 @@ module top_plate() {
         // Countersinks
         translate([0,0,screw_countersink_depth])
         bottom_screw_holes(screw_countersink_diameter / 2);
+    }
+    
+    handle_top();
     }
 }
 
@@ -308,6 +314,64 @@ module bottom_clamshell(w, h, d) {
         translate([0,0,-logo_depth+epsilon])
         logo(30);
     }
+}
+
+module rounded_linear_extrude(depth, radius, slices=50) {
+    // Slice from 0...radius,             use 'offset'
+    // Slice from radius..(depth-radius), just flat
+    // Slice from (depth-radius)..radius, use 'offset'
+    slice_thickness = depth/slices;
+    union() {
+        for (dz = [0:slice_thickness:depth]) {
+            translate([0,0,dz])
+            linear_extrude(slice_thickness+epsilon)
+            rounded_linear_extrude_crossection(depth, radius, dz) children();
+        }
+    }
+}
+module rounded_linear_extrude_crossection(depth, radius, dz) {
+    d_end = (dz >= depth-radius) ? depth-dz-radius : (
+        (dz <= radius) ? dz-radius : 0
+    );
+    
+    // Rounded chamfer, not triangular
+    inset = sqrt(radius*radius-d_end*d_end)-radius;
+    
+    offset(inset)
+    children();
+}
+
+handle_size = [80, 25];
+handle_length = handle_size[0];
+handle_width = handle_size[1];
+handle_groove_size = [50, 15];
+handle_groove_length = handle_groove_size[0];
+handle_groove_width = handle_groove_size[1];
+handle_rounding = 1;
+module handle_base(thickness) {
+    translate([board_w/2-handle_length/2,-handle_width+handle_rounding,0])
+    intersection() {
+        cube([handle_length, handle_width, thickness]);
+        rounded_linear_extrude(thickness, handle_rounding) {
+            difference() {
+                hull() {
+                    translate([handle_width,handle_width, 0])
+                    circle(r=handle_width);
+                    translate([handle_length-handle_width,handle_width, 0])
+                    circle(r=handle_width);
+                }
+            
+                translate([handle_length/2-handle_groove_length/2, handle_width-handle_groove_width])
+                square([handle_groove_length, handle_groove_width]);
+            }
+        }
+    }
+}
+module handle_top() {
+    handle_base(plate_thickness);
+}
+module handle_bottom() {
+    handle_base(keyboard_thickness);
 }
 
 translate([0, 0, clamshell_depth_b*20])
