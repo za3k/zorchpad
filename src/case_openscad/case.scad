@@ -130,7 +130,7 @@ board_w = edge_left + key_spacing_h * cols + edge_right;
 board_h = edge_top  + key_spacing_v * rows + edge_bottom;
 
 module pin_hole() {
-    translate([board_w/2, edge_top/2]) {
+    translate([board_w/2-pins_width/2, edge_top/2]) {
         square([pins_width, pins_height]);
     }
 }
@@ -270,7 +270,6 @@ module remove_cutout(thing, cut) {
 }
 
 module top_cutouts() {
-    
     // Left sharp display screen
     translate([45,10])
     sharp_screen_cutout();
@@ -294,6 +293,12 @@ module top_cutouts() {
     // Battery cutout
     translate([board_w-35,30])
     battery_cutout();
+    
+    // Connector cable to the keyboard
+    
+    translate([0,board_h,0])
+    scale([1,-1,1])
+    pin_hole();
 }
 
 module battery_cutout() {
@@ -363,7 +368,6 @@ module top_plate() {
     
         battery_holder();
         handle_top();
-    
         hinge_top();
     }
 }
@@ -527,13 +531,13 @@ module hinge_part(w, od, id, c) {
 }
 
 module hinge_hole_top(od) {
-    hinge_offset_top(0, od);
-    hinge_part(board_w,od,0);
+    hinge_offset_top(0, od)
+    hinge_part(board_w,od,0,false);
 }
 
 module hinge_hole_bottom(od) {
     hinge_offset_bottom(0, od)
-    hinge_part(board_w,od,0);
+    hinge_part(board_w,od,0,false);
 }
 
 module hinge_part_top(off, w, od, id) {
@@ -561,33 +565,47 @@ module hinge_top() {
     }
 }
 
+module hinge_tapered_holes(id, depth) {
+    translate([-nothing/2,board_h+hinge_offset,0.9+plate_thickness])
+    rotate([0,90,0])
+    cylinder(h=depth,d1=id*1.5,d2=id);
+    
+    translate([board_w+nothing/2,board_h+hinge_offset,0.9+plate_thickness])
+    rotate([0,270,0])
+    cylinder(h=depth,d1=id*1.5,d2=id);
+}
+
 module hinge_bottom() {
     w=102;
     od=8;
     id=2;
     part_w=w/6;
     
-    for (i = [0,2,4]) {
-        hinge_part_bottom(part_w*i,part_w,od=8,id=2);
+    difference() {
+    union() {    
+        for (i = [0,2,4]) {
+            hinge_part_bottom(part_w*i,part_w,od=8,id=2);
+        }
+        
+        for (i = [1,3,5]) {
+            hinge_part_bottom(board_w-part_w*i,part_w,od=8,id=2);
+        }
+        
+        // center solid
+        center_w = board_w-102*2;
+        hinge_part_bottom(102,w=center_w, od=8, id=0);
     }
+    // Two tapered holes at the end, to help the pins lock in place
+    hinge_tapered_holes(2, part_w/2);
     
-    for (i = [1,3,5]) {
-        hinge_part_bottom(board_w-part_w*i,part_w,od=8,id=2);
+    
     }
-    
-    // center solid
-    center_w = board_w-102*2;
-    hinge_part_bottom(102,w=center_w, od=8, id=0);
 }
 
-*translate([0, 0, clamshell_depth_b*20])
+translate([0, 0, clamshell_depth_b*20])
 color("lightblue")
 scale([1,1,-1])
 top_piece();
-
-*color("red")
-translate([0, 0, clamshell_depth_b*20])
-audio_port();
 
 translate([0, 0, clamshell_depth_b*10])
 color("orange")
@@ -596,7 +614,6 @@ top_plate();
 color("lightgreen")
 keyboard_plate();
 
-*translate([0, 0, -clamshell_depth_b*10])
+translate([0, 0, -clamshell_depth_b*10])
 color("pink")
 bottom_clamshell(board_w, board_h, clamshell_depth_b);
-
