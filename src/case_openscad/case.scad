@@ -311,10 +311,18 @@ module battery_cutout() {
     square([27,55]);
 }
 
+
+module clip_cutout() {
+    // 8mm wide, 1.71mm dia hole, .25mm thick
+    cylinder(h=100,d=1.8,center=true);
+    
+    translate([0,0,12])
+    cube([5.89,8.38,0.5],center=true);
+}
+
 module battery_holder() {
     finger_width = 25;
     translate([board_w-35,30])
-    
     difference() {
         cube([finger_width+2,55,13]);
         
@@ -325,7 +333,24 @@ module battery_holder() {
         // Battery hole
         translate([finger_width/2-5,1,-nothing])
         cube([12,53,12]);
+        
+        // Wire cutouts
+        translate([finger_width/2+1,2,-nothing])
+        cylinder(h=100,d=1.5,center=true);
+        
+        translate([finger_width/2+1,53,-nothing])
+        cylinder(h=100,d=1.5,center=true);
+        
+        // Clip screw cutout(s)
+        translate([finger_width/2+1,12.5+4.5,-nothing])
+        clip_cutout();
+        
+        translate([finger_width/2+1,54-12.5-4.5,-nothing])
+        clip_cutout();
     }
+    
+    
+    
 }
 
 module powerswitch_cutout() {
@@ -618,7 +643,7 @@ top_piece();
 translate([0, 0, clamshell_depth_b*10])
 top_plate();
 
-keyboard_plate();
+*keyboard_plate();
 
-translate([0, 0, -clamshell_depth_b*10])
+*translate([0, 0, -clamshell_depth_b*10])
 bottom_clamshell(board_w, board_h, clamshell_depth_b);
