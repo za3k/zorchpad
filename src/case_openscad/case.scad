@@ -19,7 +19,9 @@ edge_bottom = keyboard_edges[3];
 grid = [12, 5];
 rows = grid[1]; cols = grid[0];
 // Horizontal and vertical key spacing
-key_pitch = [18.5, 18.5];
+key_size = [17.8, 17.8];
+key_gap_size = [0.5, 0.5];
+key_pitch = [key_size[0]+key_gap_size[0],key_size[1]+key_gap_size[1]];
 key_spacing_h = key_pitch[0];
 key_spacing_v = key_pitch[1];
 // Hole size (h, v)
@@ -51,6 +53,9 @@ clamshell_depth_t = 15;
 plate_thickness = 2;
 screw_insert_diameter = 6;
 
+magnet_diameter = 6;
+magnet_thickness = 1.5;
+
 logo_depth = 0.7;
 
 epsilon = 0.001;
@@ -59,6 +64,31 @@ big = 1000;
 // x = width = col #
 // y = thickness = row # 
 // z = height
+
+module rounded_linear_extrude(depth, radius, slices=50) {
+    // Slice from 0...radius,             use 'offset'
+    // Slice from radius..(depth-radius), just flat
+    // Slice from (depth-radius)..radius, use 'offset'
+    slice_thickness = depth/slices;
+    union() {
+        for (dz = [0:slice_thickness:depth]) {
+            translate([0,0,dz])
+            linear_extrude(slice_thickness+epsilon)
+            rounded_linear_extrude_crossection(depth, radius, dz) children();
+        }
+    }
+}
+module rounded_linear_extrude_crossection(depth, radius, dz) {
+    d_end = (dz >= depth-radius) ? depth-dz-radius : (
+        (dz <= radius) ? dz-radius : 0
+    );
+    
+    // Rounded chamfer, not triangular
+    inset = sqrt(radius*radius-d_end*d_end)-radius;
+    
+    offset(inset)
+    children();
+}
 
 module flat_hole(x, y, width, height) {
     translate([x, y]) {
@@ -316,31 +346,6 @@ module bottom_clamshell(w, h, d) {
     }
 }
 
-module rounded_linear_extrude(depth, radius, slices=50) {
-    // Slice from 0...radius,             use 'offset'
-    // Slice from radius..(depth-radius), just flat
-    // Slice from (depth-radius)..radius, use 'offset'
-    slice_thickness = depth/slices;
-    union() {
-        for (dz = [0:slice_thickness:depth]) {
-            translate([0,0,dz])
-            linear_extrude(slice_thickness+epsilon)
-            rounded_linear_extrude_crossection(depth, radius, dz) children();
-        }
-    }
-}
-module rounded_linear_extrude_crossection(depth, radius, dz) {
-    d_end = (dz >= depth-radius) ? depth-dz-radius : (
-        (dz <= radius) ? dz-radius : 0
-    );
-    
-    // Rounded chamfer, not triangular
-    inset = sqrt(radius*radius-d_end*d_end)-radius;
-    
-    offset(inset)
-    children();
-}
-
 handle_size = [80, 25];
 handle_length = handle_size[0];
 handle_width = handle_size[1];
@@ -367,11 +372,30 @@ module handle_base(thickness) {
         }
     }
 }
+module magnet_holes() {
+    translate([board_w/2-handle_length/2+(handle_width-handle_groove_width)/2+magnet_diameter/2,-handle_width/2+magnet_diameter,-magnet_thickness])
+    
+    cylinder(h=magnet_thickness, d=magnet_diameter);
+    
+    translate([board_w/2+handle_length/2-(handle_width-handle_groove_width)/2-magnet_diameter/2,-handle_width/2+magnet_diameter+handle_rounding,-magnet_thickness])
+    
+    cylinder(h=magnet_thickness, d=magnet_diameter);
+}
 module handle_top() {
-    handle_base(plate_thickness);
+    difference() {
+        handle_base(plate_thickness);
+        
+        translate([0,0,magnet_thickness-epsilon])
+        magnet_holes();
+    }
 }
 module handle_bottom() {
-    handle_base(keyboard_thickness);
+    difference() {
+        handle_base(keyboard_thickness);
+    
+        translate([0,0,keyboard_thickness+epsilon])
+        magnet_holes();
+    }
 }
 
 translate([0, 0, clamshell_depth_b*20])
