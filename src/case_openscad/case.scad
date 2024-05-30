@@ -608,8 +608,11 @@ module hinge_part(w, od, id, c) {
 }
 
 module hinge_hole_top(od) {
-    hinge_offset_top(0, od)
-    hinge_part(board_w,od,0,false);
+    w=102;
+    part_w=w/6;
+    
+    hinge_offset_top(part_w+nothing/2, od)
+    hinge_part(board_w-part_w*2-nothing,od-nothing,0,false);
 }
 
 module hinge_hole_bottom(od) {
