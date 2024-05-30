@@ -341,13 +341,12 @@ module battery_holder_attach(){
     
     translate([x,y,plate_thickness/2])
     difference() {
-        cube([w, h, plate_thickness], center=true);
+        cube([w+nothing, h+nothing, plate_thickness], center=true);
         translate([0,0,-5])
         cylinder(d=2, h=10);
     }
 }
 module battery_holder() {
-    translate([board_w-35,30,plate_thickness])
     difference() {
         cube([finger_width+2,55,13]);
         
@@ -408,8 +407,9 @@ module sharp_screen_cutout() {
 }
     
 module top_plate(include_battery_box) {
-    color("orange")
+    //color("orange")
     union() {
+        color("orange")
         difference() {
             remove_cutout() {
                 difference() {
@@ -437,7 +437,9 @@ module top_plate(include_battery_box) {
         }
  
         if (include_battery_box)
+            translate([board_w-35,30,plate_thickness])
             battery_holder();
+        color("red")
         battery_holder_attach();
         
         handle_top();
@@ -682,8 +684,24 @@ module hinge_bottom() {
     }
 }
 
-cool_render = false;
-if (cool_render) {
+cool_render = true;
+part = "";
+if (part && part == "top_shell") {
+    top_piece();
+} else if (part && part == "top_plate") {
+    translate([0, board_h, plate_thickness])
+    rotate([0,180,180])
+    top_plate(false);
+} else if (part && part == "bottom_shell") {
+    bottom_clamshell(board_w, board_h, clamshell_depth_b);
+} else if (part && part == "keyboard_plate") {
+    translate([0,handle_width,0])
+    keyboard_plate();
+} else if (part && part == "battery_box") {
+    translate([27,0,13])
+    rotate([0,180,0])
+    battery_holder();
+} else if (cool_render) {
     translate([0, 0, clamshell_depth_b*20])
     scale([1,1,-1])
     top_piece();
@@ -703,7 +721,7 @@ if (cool_render) {
     rotate([0,180,0])
     top_plate(false);
     
-    translate([700, 0, 13])
+    translate([520, 0, 13])
     rotate([0,180,0])
     battery_holder();
 
