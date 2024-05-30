@@ -395,7 +395,13 @@ module handle_bottom() {
     
         translate([0,0,keyboard_thickness+epsilon])
         magnet_holes();
+        
+        translate([board_w/2,-handle_width,keyboard_thickness])
+rotate([20,0,0])
+cube([30, 15, 5], center=true);
     }
+    
+    
 }
 
 translate([0, 0, clamshell_depth_b*20])
