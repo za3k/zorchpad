@@ -58,7 +58,7 @@ magnet_thickness = 1.5;
 
 logo_depth = 0.7;
 
-epsilon = 0.001;
+nothing = 0.001;
 big = 1000;
 
 // x = width = col #
@@ -73,7 +73,7 @@ module rounded_linear_extrude(depth, radius, slices=50) {
     union() {
         for (dz = [0:slice_thickness:depth]) {
             translate([0,0,dz])
-            linear_extrude(slice_thickness+epsilon)
+            linear_extrude(slice_thickness+nothing)
             rounded_linear_extrude_crossection(depth, radius, dz) children();
         }
     }
@@ -167,19 +167,18 @@ module screw_hole(y, x, r=screw_diameter/2) {
     center_x = edge_left + x*key_spacing_h;
     center_y = edge_top + y*key_spacing_v;
     
-    translate([center_x, center_y, -spacer_height/2-epsilon])
+    translate([center_x, center_y, -spacer_height/2-nothing])
     cylinder(h=spacer_height, r=r, center=true);
 }
 
 module top_screw_holes(r) {
-    screw_holes(r);
+    screw_hole(0.3, 1, r);
+    screw_hole(1, cols-1, r);
+    screw_hole(rows-0.5, 1, r);
+    screw_hole(rows-0.5, cols-1, r);
 }
 
 module bottom_screw_holes(r) {
-    screw_holes(r);
-}
-
-module screw_holes(r) {
     screw_hole(1, 1, r);
     screw_hole(1, cols-1, r);
     screw_hole(rows-1, 1, r);
@@ -227,6 +226,7 @@ module keyboard_plate() {
         }
     }
     handle_bottom();
+    hinge_bottom();
 }
 
 module rounded_thing(w, h, d) {
@@ -267,6 +267,70 @@ module remove_cutout(thing, cut) {
         infinitely_tall() children([1:$children-1]);
     }
 }
+
+module top_cutouts() {
+    
+    // Left sharp display screen
+    translate([45,10])
+    sharp_screen_cutout();
+    
+    // Left sharp display screen
+    translate([board_w-45-43,10])
+    sharp_screen_cutout();
+    
+    // E-ink screen
+    translate([5,16])
+    eink_screen_cutout();
+    
+    // GPIO cutout
+    translate([board_w-45,2])
+    gpio_cutout();
+    
+    // Power switch cutout
+    translate([board_w-35,8])
+    powerswitch_cutout();
+    
+    // Battery cutout
+    translate([board_w-35,30])
+    battery_cutout();
+}
+
+module battery_cutout() {
+    square([27,55]);
+}
+
+module battery_holder() {
+    finger_width = 25;
+    translate([board_w-35,30])
+    
+    difference() {
+        cube([finger_width+2,55,13]);
+        
+        // Finger
+        translate([1,12.5,-nothing])
+        cube([finger_width,30,12]);
+        
+        // Battery hole
+        translate([finger_width/2-5,1,-nothing])
+        cube([12,53,12]);
+    }
+}
+
+module powerswitch_cutout() {
+    square([18.6,12.1]);
+}
+
+module gpio_cutout() {
+    square([22.7, 2.5]);
+}
+
+module eink_screen_cutout() {
+    square([32, 37]);
+}
+
+module sharp_screen_cutout() {
+    square([43, 63]);
+}
     
 module top_plate() {
     union() {
@@ -283,14 +347,20 @@ module top_plate() {
             }
             
             top_screw_holes();
+            
+            translate([0,0,-20])
+            linear_extrude(20)
+            top_cutouts();
         }
         
         // Countersinks
         translate([0,0,screw_countersink_depth])
-        bottom_screw_holes(screw_countersink_diameter / 2);
+        top_screw_holes(screw_countersink_diameter / 2);
     }
     
-    handle_top();
+        battery_holder();
+        handle_top();
+        hinge_top();
     }
 }
 
@@ -299,8 +369,11 @@ module top_clamshell(w, h, d) {
         rounded_thing(w, h, d);
     
         color("yellow")
-        translate([clamshell_thickness,clamshell_thickness,epsilon])
+        translate([clamshell_thickness,clamshell_thickness,nothing])
         rounded_thing(w-clamshell_thickness*2, h-clamshell_thickness*2, d-clamshell_thickness);
+        
+        microsd_port();
+        audio_port();
     }
 }
 
@@ -341,7 +414,7 @@ module bottom_clamshell(w, h, d) {
         translate([0,0,-d+screw_countersink_depth])
         bottom_screw_holes(screw_countersink_diameter / 2);
         
-        translate([0,0,-logo_depth+epsilon])
+        translate([0,0,-logo_depth+nothing])
         logo(30);
     }
 }
@@ -372,6 +445,25 @@ module handle_base(thickness) {
         }
     }
 }
+
+
+module audio_port() {
+    translate([0,0,-11.6]) {
+        
+    translate([29.5,0,11.6/2])
+    rotate([270,0,0])
+    cylinder(d=6.8, h=7.7);
+    
+    translate([32-6,3.7,0])
+    cube([10.5, 12, 11.6]);
+        
+    }
+}
+
+module microsd_port() {
+    translate([0,board_h-40,-2.1+nothing])
+    cube([31.9,24,2.1]);
+}
 module magnet_holes() {
     translate([board_w/2-handle_length/2+(handle_width-handle_groove_width)/2+magnet_diameter/2,-handle_width/2+magnet_diameter,-magnet_thickness])
     
@@ -385,7 +477,7 @@ module handle_top() {
     difference() {
         handle_base(plate_thickness);
         
-        translate([0,0,magnet_thickness-epsilon])
+        translate([0,0,magnet_thickness-nothing])
         magnet_holes();
     }
 }
@@ -393,21 +485,34 @@ module handle_bottom() {
     difference() {
         handle_base(keyboard_thickness);
     
-        translate([0,0,keyboard_thickness+epsilon])
+        translate([0,0,keyboard_thickness+nothing])
         magnet_holes();
         
         translate([board_w/2,-handle_width,keyboard_thickness])
 rotate([20,0,0])
 cube([30, 15, 5], center=true);
     }
-    
-    
+}
+
+module hinge_top() {
+    translate([0,board_h,0])
+    rotate([0,90,0])
+    cylinder(h=board_w,d=8);
+}
+module hinge_bottom() {
+    translate([0,board_h,0])
+    rotate([0,90,0])
+    cylinder(h=board_w,d=8);
 }
 
 translate([0, 0, clamshell_depth_b*20])
 color("lightblue")
 scale([1,1,-1])
 top_piece();
+
+*color("red")
+translate([0, 0, clamshell_depth_b*20])
+audio_port();
 
 translate([0, 0, clamshell_depth_b*10])
 color("orange")
@@ -419,3 +524,4 @@ keyboard_plate();
 translate([0, 0, -clamshell_depth_b*10])
 color("pink")
 bottom_clamshell(board_w, board_h, clamshell_depth_b);
+
