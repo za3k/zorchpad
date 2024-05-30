@@ -93,12 +93,22 @@ module flat_hole(x, y, width, height) {
     }
 }
 
+connections = [
+    [1,[0]],
+    [2.25, [0,24]],
+    [2.75, [10,34]],
+];
 module key(x, y, width=1) {
     if (width <=1) key_hole(x, y, width);
-    else if (width <= 1.5) key_hole(x+(width-1)/2);
     else {
-        key_hole(x, y);
-        key_hole(x+width-1, y);
+        for (option = connections) {
+            if (option[0] == width) {
+                for (j = option[1]) {
+                    translate([j,0])
+                    key_hole(x, y,1);
+                }
+            }
+        }
     }
 }
 
@@ -137,27 +147,21 @@ module pin_hole() {
 
 keys = [
     // Row, Column
-    [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9], [0, 10], [0, 11],
-    [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8], [1, 9], [1, 10], [1, 11],
-    [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8], [2, 9], [2, 10], [2, 11],
-    [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7], [3, 8], [3, 9], [3, 10], [3, 11],
-    [4, 0], [4, 1], [4, 2],
-    [4, 3, 2.5], [4, 5.5, 2.5], // Spacebar, enter
-    [4, 8], [4, 9], [4, 10], [4, 11],
+    [0, 0, 1], [0, 1, 1], [0, 2, 1], [0, 3, 1], [0, 4, 1], [0, 5, 1], [0, 6, 1], [0, 7, 1], [0, 8, 1], [0, 9, 1], [0, 10, 1], [0, 11, 1],
+    [1, 0, 1], [1, 1, 1], [1, 2, 1], [1, 3, 1], [1, 4, 1], [1, 5, 1], [1, 6, 1], [1, 7, 1], [1, 8, 1], [1, 9, 1], [1, 10, 1], [1, 11, 1],
+    [2, 0, 1], [2, 1, 1], [2, 2, 1], [2, 3, 1], [2, 4, 1], [2, 5, 1], [2, 6, 1], [2, 7, 1], [2, 8, 1], [2, 9, 1], [2, 10, 1], [2, 11, 1],
+    [3, 0, 1], [3, 1, 1], [3, 2, 1], [3, 3, 1], [3, 4, 1], [3, 5, 1], [3, 6, 1], [3, 7, 1], [3, 8, 1], [3, 9, 1], [3, 10, 1], [3, 11, 1],
+    [4, 0, 1], [4, 1, 1], [4, 2, 1],
+    [4, 3, 2.25], [4, 5.68, 2.25], // Spacebar, enter
+    [4, 8, 1], [4, 9, 1], [4, 10, 1], [4, 11, 1],
 ];
 
 module key_holes() {
-  for (key = keys) {
-    if (len(key) == 2) key_hole(key[1], key[0], 1);
-    else key_hole(key[1], key[0], key[2]);       
-  }
+  for (key = keys) key(key[1], key[0], key[2]);
 }
 
 module key_supports() {
-  for (key = keys) {
-    if (len(key) == 2) key_support(key[1], key[0], 1);
-    else key_support(key[1], key[0], key[2]);       
-  }  
+  for (key = keys) key_support(key[1], key[0], key[2]);
 }
 
 module screw_hole(y, x, r=screw_diameter/2) {
@@ -183,6 +187,8 @@ module bottom_screw_holes(r) {
 }
 
 module keyboard_plate() {
+    color("lightgreen")
+    union() {
     difference() {
     translate([0,board_h,0])
     scale([1,-1,1]) {
@@ -228,6 +234,7 @@ module keyboard_plate() {
     
     handle_bottom();
     hinge_bottom();
+    }
 }
 
 module rounded_thing(w, h, d) {
@@ -295,7 +302,6 @@ module top_cutouts() {
     battery_cutout();
     
     // Connector cable to the keyboard
-    
     translate([0,board_h,0])
     scale([1,-1,1])
     pin_hole();
@@ -339,6 +345,7 @@ module sharp_screen_cutout() {
 }
     
 module top_plate() {
+    color("orange")
     union() {
     difference() {
         remove_cutout() {
@@ -379,9 +386,6 @@ module top_clamshell(w, h, d) {
         color("yellow")
         translate([clamshell_thickness,clamshell_thickness,nothing])
         rounded_thing(w-clamshell_thickness*2, h-clamshell_thickness*2, d-clamshell_thickness);
-        
-        microsd_port();
-        audio_port();
     }
 }
 
@@ -392,6 +396,7 @@ module logo(size=10) {
 }
 
 module top_piece() {
+    color("lightblue")
     difference() {
         union() {
             top_clamshell(board_w, board_h, clamshell_depth_t);
@@ -408,11 +413,15 @@ module top_piece() {
         
         translate([0,0,-clamshell_depth_t])
         logo(20);
+        
+        microsd_port();
+        audio_port();
     }
 }
 
 module bottom_clamshell(w, h, d) { 
     difference() {
+        color("pink")
         remove_cutout() {
             rounded_thing(w, h, d);
             bottom_screw_holes();
@@ -455,14 +464,14 @@ module handle_base(thickness) {
 }
 
 module audio_port() {
-    translate([0,0,-11.6]) {
-        
-    translate([29.5,0,11.6/2])
-    rotate([270,0,0])
-    cylinder(d=6.8, h=7.7);
+    translate([0,60,-11.6])
+    rotate([0,0,270]) {
+        translate([29.5,0,11.6/2])
+        rotate([270,0,0])
+        cylinder(d=6.8, h=7.7);
     
-    translate([32-6,3.7,0])
-    cube([10.5, 12, 11.6]);
+        translate([32-6,3.7,0])
+        cube([10.5, 12, 11.6]);
         
     }
 }
@@ -603,17 +612,13 @@ module hinge_bottom() {
 }
 
 translate([0, 0, clamshell_depth_b*20])
-color("lightblue")
 scale([1,1,-1])
 top_piece();
 
 translate([0, 0, clamshell_depth_b*10])
-color("orange")
 top_plate();
 
-color("lightgreen")
 keyboard_plate();
 
 translate([0, 0, -clamshell_depth_b*10])
-color("pink")
 bottom_clamshell(board_w, board_h, clamshell_depth_b);
