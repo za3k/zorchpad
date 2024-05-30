@@ -407,9 +407,8 @@ module sharp_screen_cutout() {
 }
     
 module top_plate(include_battery_box) {
-    //color("orange")
+    color("orange")
     union() {
-        color("orange")
         difference() {
             remove_cutout() {
                 difference() {
@@ -439,7 +438,6 @@ module top_plate(include_battery_box) {
         if (include_battery_box)
             translate([board_w-35,30,plate_thickness])
             battery_holder();
-        color("red")
         battery_holder_attach();
         
         handle_top();
