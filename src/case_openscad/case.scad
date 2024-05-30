@@ -1,3 +1,11 @@
+// Designed by Zachary Vance for the "Zorchpad"
+//
+// TO EXPORT STL FILES, run the following in a shell:
+//   for part in top_shell bottom_shell keyboard_plate top_plate battery_box; do openscad -D part=\"$part\" -o $part.stl "case.scad" done
+// (or if you have no idea what that means, change this variable:
+part = "";
+// To each of the 5 values listed above and export STL manually after each re-render.
+
 keyboard_thickness = 4.8;
 
 // Add a little extra room on the keyboard edges (l, r, t, b)
@@ -683,7 +691,6 @@ module hinge_bottom() {
 }
 
 cool_render = true;
-part = "";
 if (part && part == "top_shell") {
     top_piece();
 } else if (part && part == "top_plate") {
