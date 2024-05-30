@@ -1,6 +1,3 @@
-// TODO: Add hinge
-// TODO: rounded_linear_extrude
-
 keyboard_thickness = 4.8;
 
 // Add a little extra room on the keyboard edges (l, r, t, b)
@@ -186,6 +183,7 @@ module bottom_screw_holes(r) {
 }
 
 module keyboard_plate() {
+    difference() {
     translate([0,board_h,0])
     scale([1,-1,1]) {
         linear_extrude(height=keyboard_thickness)
@@ -225,6 +223,9 @@ module keyboard_plate() {
             bottom_screw_holes();
         }
     }
+    hinge_hole_bottom(od=8);
+    }
+    
     handle_bottom();
     hinge_bottom();
 }
@@ -356,10 +357,13 @@ module top_plate() {
         // Countersinks
         translate([0,0,screw_countersink_depth])
         top_screw_holes(screw_countersink_diameter / 2);
+        
+        hinge_hole_top(od=8);
     }
     
         battery_holder();
         handle_top();
+    
         hinge_top();
     }
 }
@@ -446,7 +450,6 @@ module handle_base(thickness) {
     }
 }
 
-
 module audio_port() {
     translate([0,0,-11.6]) {
         
@@ -494,18 +497,90 @@ cube([30, 15, 5], center=true);
     }
 }
 
-module hinge_top() {
-    translate([0,board_h,0])
-    rotate([0,90,0])
-    cylinder(h=board_w,d=8);
+hinge_offset=1;
+module hinge_offset_bottom(off, od) {
+   translate([off,board_h+hinge_offset,0.9+plate_thickness
+]) children();
 }
-module hinge_bottom() {
-    translate([0,board_h,0])
-    rotate([0,90,0])
-    cylinder(h=board_w,d=8);
+module hinge_offset_top(off, od) {
+    translate([off,board_h+hinge_offset,0-plate_thickness]) children();
 }
 
-translate([0, 0, clamshell_depth_b*20])
+
+
+module hinge_part(w, od, id, c) {
+    difference() {
+        union() {
+        rotate([0,90,0])
+        cylinder(h=w,d=od);
+        
+        if (c)
+        translate([0,-od/2,-od/2])
+        cube([w,hinge_offset+od/2,od]);
+        }
+    
+        if (id > 0)
+            translate([-nothing/2,0,0])
+            rotate([0,90,0])
+            cylinder(h=w+nothing,d=id);
+    }
+}
+
+module hinge_hole_top(od) {
+    hinge_offset_top(0, od);
+    hinge_part(board_w,od,0);
+}
+
+module hinge_hole_bottom(od) {
+    hinge_offset_bottom(0, od)
+    hinge_part(board_w,od,0);
+}
+
+module hinge_part_top(off, w, od, id) {
+    hinge_offset_top(off, od)
+    hinge_part(w,od,id, false);
+}
+
+module hinge_part_bottom(off, w, od, id) {
+    hinge_offset_bottom(off, od)
+    hinge_part(w,od,id,true);
+}
+
+module hinge_top() {
+    w=102;
+    od=8;
+    id=2;
+    part_w=w/6;
+    
+    for (i = [1,3,5]) {
+        hinge_part_top(part_w*i,part_w,od=8,id=2);
+    }
+    
+    for (i = [2,4,6]) {
+        hinge_part_top(board_w-part_w*i,part_w,od=8,id=2);
+    }
+}
+
+module hinge_bottom() {
+    w=102;
+    od=8;
+    id=2;
+    part_w=w/6;
+    
+    for (i = [0,2,4]) {
+        hinge_part_bottom(part_w*i,part_w,od=8,id=2);
+    }
+    
+    for (i = [1,3,5]) {
+        hinge_part_bottom(board_w-part_w*i,part_w,od=8,id=2);
+    }
+    
+    // center solid
+    center_w = board_w-102*2;
+    hinge_part_bottom(102,w=center_w, od=8, id=0);
+}
+
+*translate([0, 0, clamshell_depth_b*20])
 color("lightblue")
 scale([1,1,-1])
 top_piece();
@@ -521,7 +596,7 @@ top_plate();
 color("lightgreen")
 keyboard_plate();
 
-translate([0, 0, -clamshell_depth_b*10])
+*translate([0, 0, -clamshell_depth_b*10])
 color("pink")
 bottom_clamshell(board_w, board_h, clamshell_depth_b);
 
