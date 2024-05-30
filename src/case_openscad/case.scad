@@ -188,6 +188,7 @@ module bottom_screw_holes(r) {
 
 module keyboard_plate() {
     color("lightgreen")
+    translate([0,0,spacer_height])
     union() {
     difference() {
     translate([0,board_h,0])
@@ -298,7 +299,7 @@ module top_cutouts() {
     powerswitch_cutout();
     
     // Battery cutout
-    translate([board_w-35,30])
+    translate([board_w-34,31])
     battery_cutout();
     
     // Connector cable to the keyboard
@@ -308,7 +309,7 @@ module top_cutouts() {
 }
 
 module battery_cutout() {
-    square([27,55]);
+    square([25,53]);
 }
 
 
@@ -320,9 +321,33 @@ module clip_cutout() {
     cube([5.89,8.38,0.5],center=true);
 }
 
+finger_width = 25; // To pull out battery
+module battery_holder_attach(){
+    w = (finger_width-12)/2;
+    h = (53-30)/2;
+    x_inset = w/2;
+    ;
+    y_inset = h/2;
+    x1 = board_w-35-nothing/2+x_inset+1;
+    x2 = x1+finger_width/2+12.5-w;
+    y1 = 30-nothing/2+y_inset+1;
+    y2 = y1+53-h;
+    
+    
+    d = 2; // Screw diameter
+    
+    for (x = [x1,x2])
+    for (y = [y1,y2])
+    
+    translate([x,y,plate_thickness/2])
+    difference() {
+        cube([w, h, plate_thickness], center=true);
+        translate([0,0,-5])
+        cylinder(d=2, h=10);
+    }
+}
 module battery_holder() {
-    finger_width = 25;
-    translate([board_w-35,30])
+    translate([board_w-35,30,plate_thickness])
     difference() {
         cube([finger_width+2,55,13]);
         
@@ -347,10 +372,23 @@ module battery_holder() {
         
         translate([finger_width/2+1,54-12.5-4.5,-nothing])
         clip_cutout();
+        
+        // Attach to the main piece with screws
+        w = (finger_width-12)/2;
+        h = (53-30)/2;
+        x_inset = w/2;
+        ;
+        y_inset = h/2;
+        x1 = nothing/2+x_inset+1;
+        x2 = x1+finger_width/2+12.5-w;
+        y1 = nothing/2+y_inset+1;
+        y2 = y1+53-h;
+        
+        for (x = [x1,x2])
+        for (y = [y1,y2])
+        translate([x,y,-nothing])
+        cylinder(d=2, h=5);
     }
-    
-    
-    
 }
 
 module powerswitch_cutout() {
@@ -369,36 +407,39 @@ module sharp_screen_cutout() {
     square([43, 63]);
 }
     
-module top_plate() {
+module top_plate(include_battery_box) {
     color("orange")
     union() {
-    difference() {
-        remove_cutout() {
-            difference() {
-                intersection() {
-                    cube([board_w, board_h, plate_thickness]);
-                    
-                    scale([1,1,-1])
-                    rounded_thing(board_w, board_h, clamshell_depth_t);
+        difference() {
+            remove_cutout() {
+                difference() {
+                    intersection() {
+                        cube([board_w, board_h, plate_thickness]);
+                        
+                        scale([1,1,-1])
+                        rounded_thing(board_w, board_h, clamshell_depth_t);
+                    }
+                    top_clamshell(board_w, board_h, clamshell_depth_t);
                 }
-                top_clamshell(board_w, board_h, clamshell_depth_t);
+                
+                top_screw_holes();
+                
+                translate([0,0,-20])
+                linear_extrude(20)
+                top_cutouts();
             }
             
-            top_screw_holes();
+            // Countersinks
+            translate([0,0,screw_countersink_depth])
+            top_screw_holes(screw_countersink_diameter / 2);
             
-            translate([0,0,-20])
-            linear_extrude(20)
-            top_cutouts();
+            hinge_hole_top(od=8);
         }
+ 
+        if (include_battery_box)
+            battery_holder();
+        battery_holder_attach();
         
-        // Countersinks
-        translate([0,0,screw_countersink_depth])
-        top_screw_holes(screw_countersink_diameter / 2);
-        
-        hinge_hole_top(od=8);
-    }
-    
-        battery_holder();
         handle_top();
         hinge_top();
     }
@@ -422,6 +463,7 @@ module logo(size=10) {
 
 module top_piece() {
     color("lightblue")
+    translate([0,0,clamshell_depth_t])
     difference() {
         union() {
             top_clamshell(board_w, board_h, clamshell_depth_t);
@@ -445,6 +487,7 @@ module top_piece() {
 }
 
 module bottom_clamshell(w, h, d) { 
+    translate([0,0,d])
     difference() {
         color("pink")
         remove_cutout() {
@@ -636,14 +679,34 @@ module hinge_bottom() {
     }
 }
 
-translate([0, 0, clamshell_depth_b*20])
-scale([1,1,-1])
-top_piece();
+cool_render = false;
+if (cool_render) {
+    translate([0, 0, clamshell_depth_b*20])
+    scale([1,1,-1])
+    top_piece();
 
-translate([0, 0, clamshell_depth_b*10])
-top_plate();
+    translate([0, 0, clamshell_depth_b*10])
+    top_plate(true);
 
-*keyboard_plate();
+    keyboard_plate();
 
-*translate([0, 0, -clamshell_depth_b*10])
-bottom_clamshell(board_w, board_h, clamshell_depth_b);
+    translate([0, 0, -clamshell_depth_b*10])
+    bottom_clamshell(board_w, board_h, clamshell_depth_b);
+} else {
+    translate([0, 150, 0])
+    top_piece();
+
+    translate([470, 0, plate_thickness])
+    rotate([0,180,0])
+    top_plate(false);
+    
+    translate([700, 0, 13])
+    rotate([0,180,0])
+    battery_holder();
+
+    translate([250, 150, 0])
+    keyboard_plate();
+
+    translate([0, 0, 0])
+    bottom_clamshell(board_w, board_h, clamshell_depth_b);
+}
