@@ -9,6 +9,7 @@ import math
 ⌃_ ⌘ ⌥_ ␣___________ f ← ↓ →
 """
 
+# Modeled off the KLE format from https://golem.hu/guide/concept-to-reality/
 layouts = [
     [
         ["ESC", "!\n1", "@\n2", "#\n3", "$\n4", "%\n5", "^\n6", "&\n7", "*\n8", "(\n9", ")\n0", "_\n-", "+\n=", ("Backspace", 1.5),],
@@ -17,12 +18,12 @@ layouts = [
         ["", ("Shift", 1.5), "Z", "X", "C", "V", "B", "N", "M", "<\n,", ">\n.", "?\n/", "↑", "",],
         [ "Fn", ("Ctrl", 1.5), "OS", "Alt", (" ", 5), "", "", "←", "↓", "→", ]
     ],
-    [ # 12 keys wide. Missing: `~, [{, ]}, \|, F1-12, DEL, Sys/Home/End/Ins/PrtSc
+    [ # 12 keys = 180mm wide. Missing: `~, [{, ]}, \|, F1-12, DEL, Sys/Home/End/Ins/PrtSc
         ["!\n1", "@\n2", "#\n3", "$\n4", "%\n5", "^\n6", "&\n7", "*\n8", "(\n9", ")\n0", "_\n-", "+\n=",],
         [("Tab", 1), "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P","←"],
         [("Esc", 1), "A", "S", "D", "F", "G", "H", "J", "K", "L", ":\n;", "\"\n'",],
         [("Shift", 1), "Z", "X", "C", "V", "B", "N", "M", "<\n,", ">\n.", "↑", "?\n/"],
-        [("Ctrl", 1), "Os", "Alt", (" ", 2.5), ("↵", 2.5), "Fn", "←", "↓", "→",]
+        [("Ctrl", 1), "Os", "Alt", ("↵", 2.5), (" ", 2.5), "Fn", "←", "↓", "→",]
     ],
 ]
 
