@@ -1,0 +1,88 @@
+Piece 1: Keyboard
+    Problem: There are a lot of supports i need to tear out.
+    Solution 1:
+        If at all possible, reverse the direction so it can print "upside down" from currently". This will require shifting the hinge.
+    Solution 2: 
+        Make the supports in the file be everywhere except where wires need to go. this reduces the amount of stuff that needs torn out
+    Solution 3:
+        Make the handle full thickness    
+
+    Problem: Magnets do not fit.
+    Solution: 
+        Measure the hole width to make sure it fits the spec.
+            If so, use 7mm holes, and make them slightly deeper.
+            If not, fix that for all holes
+            (Actual is 5.5mm, should be 6mm--make wider, deeper)
+
+    Problem: Half a key is cut off
+    Solution: (Troubleshoot) -- printer bed is too small
+
+    Problem: Fingers don't easily fit in the handle
+    Solution: Make the handle deeper (+ wider)
+
+    Problem: The keyboard flexes
+    Solution: Test to see if it's a problem. Screw things together.
+
+    Problem: Screw holes too small to fit a screw
+
+
+    Problem: Key fit slightly slack
+	Make 0.5mm narrower?
+
+    Perfect: Keycap spacing
+    Perfect: GPIO header
+    Perfect: Split spacebar pieces go on
+
+Piece 2: Top plate
+   Problem: Screen rotated 90 degrees
+   Solution: Redesign
+
+   Problem: Screw countersinks are too narrow
+   Solution: Increase to 8mm across
+
+   Problem: Battery holes screws will stick out
+   Solution: Add countersinks
+
+   Problem: Power switch does not fit in.
+   Solution: Make long direction bigger by 1mm
+
+   Problem: Sharp displays do not fit
+   Solution: Make long direction bigger by 1mm
+
+   Problem: E-ink screen a little loose
+   Solution: Fine, use glue.
+
+Piece 3: Bottom Clamshell
+   Problem: a little poke-y.
+   Solution: round edges more, extra vertical section
+
+   Problem: Screw holes will not fit a screw
+
+Piece 4: Top Clamshell
+   Problem: Text is printed backwards.
+   Solution: Reverse
+
+   Problem: Screw holes will not fit a screw
+   Solution: widen
+
+Piece 5: Battery Holder
+    ???
+
+Hinge:
+    Problem: There is no "stop" for the hinge.
+    Solution: Add a stop
+
+    Problem: Holes in hinge not big enough
+    Solution 1: Drill them
+    Solution 2: Make the hole bigger and see if that works
+
+    Problem: Hinges don't fit together
+    Solution: Reduce width by 1mm each size
+
+General
+    Problem: keyboard piece directly adjuts top piece--no room for keys when case is closed
+    Solution: redesign
+
+    Problem: Handle does not easily split
+    Solution 1: Add a lip to the top piece [delay]
+    Solution 2: Make the indent WAY thicker (all the way through)

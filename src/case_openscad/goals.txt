@@ -1,0 +1,23 @@
+       Goals
+ Fun!  =====  Learn!
+
+Fix problems
+
+[ ] Move hinge on KB
+[ ] Flip KB upside down
+[ ] Make handle thick
+[ ] Expand magnet holes
+[ ] Expand handle
+[ ] Widen screw holes
+[ ] Narrow key holes
+[ ] Rotate sharp displays
+[ ] Widen screw countersinks
+[ ] Add countersinks to battery case
+[ ] Make power switch longer
+[ ] Made sharp cutout longer
+[ ] Make vertical part (round)
+[ ] Add hinge stop
+[ ] Expand hinge holes
+[ ] Narrow hinge pieces
+[ ] Add space for keys when closed
+[ ] Handle indent all the way

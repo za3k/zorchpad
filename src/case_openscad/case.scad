@@ -690,7 +690,7 @@ module hinge_bottom() {
     }
 }
 
-cool_render = true;
+cool_render = false;
 if (part && part == "top_shell") {
     top_piece();
 } else if (part && part == "top_plate") {
