@@ -5,6 +5,8 @@
 // (or if you have no idea what that means, change this variable:
 part = "";
 // To each of the 5 values listed above and export STL manually after each re-render.
+cool_render = false;
+
 
 keyboard_thickness = 4.8;
 
@@ -30,23 +32,28 @@ key_pitch = [key_size[0]+key_gap_size[0],key_size[1]+key_gap_size[1]];
 key_spacing_h = key_pitch[0];
 key_spacing_v = key_pitch[1];
 // Hole size (h, v)
-hole_size = [14.5, 14];
+hole_size = [14, 14];
 hole_size_h = hole_size[0];
 hole_size_v = hole_size[1];
+
+// How much do the complete keys protrude above the keyboard?
+keycap_height = 15;
 
 spacer_side_h = key_spacing_h - hole_size_h;
 spacer_side_v = key_spacing_v - hole_size_v;
 
 // M2 screw sizes
 screw_diameter = 2;
-screw_countersink_diameter = 3.5;
+screw_countersink_diameter = 3.5+2;
 screw_countersink_depth = 1.5;
+screw_diameter_safety = 1;
+screw_insert_diameter = 4;
 
 // add room for 17-pin header (h, v)
 pins_header = [43.5, 2.5];
 pins_width = pins_header[0];
 pins_height = pins_header[1];
-edge_top = max(edge_top_suggestion, pins_height + 4);
+edge_top = max(edge_top_suggestion, pins_height + 6);
 
 
 // Clamshell (bottom keyboard half)
@@ -56,12 +63,40 @@ clamshell_thickness = 2;
 // Clamshell (top half)
 clamshell_depth_t = 15;
 plate_thickness = 2;
-screw_insert_diameter = 6;
+
 
 magnet_diameter = 6;
 magnet_thickness = 1.5;
 
 logo_depth = 0.7;
+
+// Handle
+handle_size = [100, 32];
+handle_length = handle_size[0];
+handle_width = handle_size[1];
+handle_groove_size = [65, 22];
+handle_groove_length = handle_groove_size[0];
+handle_groove_width = handle_groove_size[1];
+handle_rounding = 1;
+
+// Hinge
+hinge_offset=1;
+hinge_offset_bottom=-1.5;
+hinge_w=102;
+hinge_od=7;
+hinge_id=2;
+hinge_id_safety=2;
+hinge_w_safety=1;
+
+side_thickness = 1;
+side_hinge_gap_safety=1;
+side_hinge_gap = hinge_od/2+side_hinge_gap_safety;
+
+logo_back = true;
+logo_ui = true;
+logo_hidden = true;
+
+// Sides (attached to top plate)
 
 nothing = 0.001;
 big = 1000;
@@ -148,7 +183,9 @@ board_w = edge_left + key_spacing_h * cols + edge_right;
 board_h = edge_top  + key_spacing_v * rows + edge_bottom;
 
 module pin_hole() {
-    translate([board_w/2-pins_width/2, edge_top/2]) {
+    min_gap_to_keys = (key_spacing_v-hole_size_v);
+    
+    translate([board_w/2-pins_width/2, edge_top-min_gap_to_keys]) {
         square([pins_width, pins_height]);
     }
 }
@@ -172,34 +209,50 @@ module key_supports() {
   for (key = keys) key_support(key[1], key[0], key[2]);
 }
 
-module screw_hole(y, x, r=screw_diameter/2) {
+module screw_hole(y, x, d=undef) {
+    hole_d = (d == undef ? screw_diameter : d) + screw_diameter_safety;
     center_x = edge_left + x*key_spacing_h;
     center_y = edge_top + y*key_spacing_v;
     
     translate([center_x, center_y, -spacer_height/2-nothing])
-    cylinder(h=spacer_height, r=r, center=true);
+    cylinder(h=spacer_height, d=hole_d, center=true);
 }
 
-module top_screw_holes(r) {
-    screw_hole(0.3, 1, r);
-    screw_hole(1, cols-1, r);
-    screw_hole(rows-0.5, 1, r);
-    screw_hole(rows-0.5, cols-1, r);
+module top_plate_screwholes(d) {
+    top_screw_holes(d);
+    
+    // TODO: Move battery box holes here
 }
 
-module bottom_screw_holes(r) {
-    screw_hole(1, 1, r);
-    screw_hole(1, cols-1, r);
-    screw_hole(rows-1, 1, r);
-    screw_hole(rows-1, cols-1, r);
+module top_clamshell_screwholes(d) {
+    translate([0, board_h,0])
+    mirror([0,1,0])
+    top_screw_holes(d);
 }
 
-module keyboard_plate() {
-    color("lightgreen")
-    translate([0,0,spacer_height])
-    union() {
-    difference() {
-    translate([0,board_h,0])
+module top_screw_holes(d) {
+    screw_hole(0.1, 1, d);
+    screw_hole(1, cols-1, d);
+    screw_hole(rows-0.5, 1, d);
+    screw_hole(rows-0.5, cols-1, d);
+}
+
+module keyboard_screwholes(d) {
+    bottom_screw_holes(d);
+}
+
+module bottom_clamshell_screwholes(d) {
+    bottom_screw_holes(d);
+}
+
+module bottom_screw_holes(d) {
+    screw_hole(1, 1, d);
+    screw_hole(1, cols-1, d);
+    screw_hole(rows-1, 1, d);
+    screw_hole(rows-1, cols-1, d);
+}
+
+module keyboard_plate_main() {
     scale([1,-1,1]) {
         linear_extrude(height=keyboard_thickness)
         difference() {
@@ -212,8 +265,16 @@ module keyboard_plate() {
         }
         
         // Edge supports
+        // this one is full thickness to support the hinge
+        top_rim_thickness = edge_top;
+        gap_width = pins_width + 1;
         translate([0, 0, -spacer_height])
-        cube([board_w, keyboard_rim, spacer_height]); // Top
+        difference() {
+            cube([board_w, top_rim_thickness, spacer_height]); // Top
+            
+            translate([board_w/2-gap_width/2, -nothing/2, -nothing/2])
+            cube([gap_width+nothing, top_rim_thickness+nothing, spacer_height+nothing]);
+        }
             
         translate([0, board_h-keyboard_rim, -spacer_height])
         cube([board_w, keyboard_rim, spacer_height]); // Bottom
@@ -235,19 +296,33 @@ module keyboard_plate() {
             linear_extrude(height=big)
             pin_hole();
             
-            bottom_screw_holes();
+            keyboard_screwholes();
         }
-    }
-    hinge_hole_bottom(od=8);
-    }
-    
-    handle_bottom();
-    hinge_bottom();
     }
 }
 
+module keyboard_plate() {
+    color("lightgreen")
+    translate([0,0,spacer_height])
+    union() {
+        difference() {
+            translate([0,board_h,0])
+            keyboard_plate_main();
+            
+            hinge_hole_bottom(od=hinge_od);
+        }
+        
+        handle_bottom();
+        hinge_bottom();
+    }
+}
+
+rounding_min_radius = 7;
+rounding_flat_part = 2;
 module rounded_thing(w, h, d) {
-    r = d;
+    add_smoothing=d<rounding_min_radius;
+    flat_d = add_smoothing ? rounding_flat_part : 0;
+    r = d - flat_d;
     x1 = 0 + r;
     y1 = 0 + r;
     x2 = w - r;
@@ -255,18 +330,17 @@ module rounded_thing(w, h, d) {
     
     intersection() {
         hull() {
-            translate([x1,y1])
-            sphere(r);
-            
-            translate([x2,y1])
-            sphere(r);
-            
-            translate([x1,y2])
-            sphere(r);
-            
-            translate([x2,y2])
-            sphere(r);
+            for (x = [x1, x2])
+            for (y = [y1, y2]) {
+                translate([x,y])
+                sphere(r);
+                
+                if (add_smoothing)
+                translate([x,y,-flat_d])
+                sphere(r);
+            }
         }
+        
         translate([0,0,-d])
         cube([w, h, d]);
     }
@@ -287,11 +361,11 @@ module remove_cutout(thing, cut) {
 
 module top_cutouts() {
     // Left sharp display screen
-    translate([45,10])
+    translate([43,10])
     sharp_screen_cutout();
     
     // Left sharp display screen
-    translate([board_w-45-43,10])
+    translate([board_w-43-64,10])
     sharp_screen_cutout();
     
     // E-ink screen
@@ -323,7 +397,7 @@ module battery_cutout() {
 
 module clip_cutout() {
     // 8mm wide, 1.71mm dia hole, .25mm thick
-    cylinder(h=100,d=1.8,center=true);
+    cylinder(h=100,d=1.8+screw_diameter_safety,center=true);
     
     translate([0,0,12])
     cube([5.89,8.38,0.5],center=true);
@@ -341,22 +415,29 @@ module battery_holder_attach(){
     y1 = 30-nothing/2+y_inset+1;
     y2 = y1+53-h;
     
-    
-    d = 2; // Screw diameter
-    
     for (x = [x1,x2])
     for (y = [y1,y2])
     
     translate([x,y,plate_thickness/2])
     difference() {
         cube([w+nothing, h+nothing, plate_thickness], center=true);
+        
+        // Screw hole
         translate([0,0,-5])
-        cylinder(d=2, h=10);
+        cylinder(d=screw_diameter+screw_diameter_safety, h=10);
+        
+        // Countersink
+        translate([0,0,plate_thickness-screw_countersink_depth*2-nothing/2])
+        cylinder(d=screw_countersink_diameter, h=screw_countersink_depth+nothing);
     }
 }
+
+battery_holder_w = finger_width+2;
+battery_holder_h = 55;
+battery_holder_d = 13;
 module battery_holder() {
     difference() {
-        cube([finger_width+2,55,13]);
+        cube([battery_holder_w,battery_holder_h,battery_holder_d]);
         
         // Finger
         translate([1,12.5,-nothing])
@@ -367,11 +448,11 @@ module battery_holder() {
         cube([12,53,12]);
         
         // Wire cutouts
-        translate([finger_width/2+1,2,-nothing])
-        cylinder(h=100,d=1.5,center=true);
+        translate([finger_width/2+1,2.5,-nothing])
+        cylinder(h=100,d=1.5+screw_diameter_safety,center=true);
         
-        translate([finger_width/2+1,53,-nothing])
-        cylinder(h=100,d=1.5,center=true);
+        translate([finger_width/2+1,52.5,-nothing])
+        cylinder(h=100,d=1.5+screw_diameter_safety,center=true);
         
         // Clip screw cutout(s)
         translate([finger_width/2+1,12.5+4.5,-nothing])
@@ -394,12 +475,12 @@ module battery_holder() {
         for (x = [x1,x2])
         for (y = [y1,y2])
         translate([x,y,-nothing])
-        cylinder(d=2, h=5);
+        cylinder(d=screw_diameter + screw_diameter_safety, h=5);
     }
 }
 
 module powerswitch_cutout() {
-    square([18.6,12.1]);
+    square([19.6,12.1]);
 }
 
 module gpio_cutout() {
@@ -411,44 +492,111 @@ module eink_screen_cutout() {
 }
 
 module sharp_screen_cutout() {
-    square([43, 63]);
+    square([64, 43]);
 }
     
-module top_plate(include_battery_box) {
+module top_plate_shape() {
+    projection()
+    difference() {
+        intersection() {
+            cube([board_w, board_h, plate_thickness]);
+            
+            scale([1,1,-1])
+            rounded_thing(board_w, board_h, clamshell_depth_t);
+        }
+        top_clamshell(board_w, board_h, clamshell_depth_t);
+    }
+}
+
+module outline(t) {
+    difference() {
+        children();
+        
+        offset(r=-t)
+        children();
+    }
+}
+
+module sides_main(d) { 
+    intersection() {
+        cube([board_w,board_h-side_hinge_gap,d]);
+    
+        
+        linear_extrude(d) {    
+            outline(side_thickness)
+            top_plate_shape();
+        }
+    }
+}
+
+module round_corner(corner, normal) {
+    sr = 3;
+    dist = 7;
+    dir = -normal / norm(normal);
+    
+    difference() {
+        children();
+    
+        translate(corner)
+        difference() {    
+            cube(sr*2, center=true);
+            
+            translate(dir * dist)
+            sphere(r=sr*2);
+        }
+    }    
+}
+
+module sides_rounding(d) {
+    // Round the two nasty interior corners
+    
+    xo = 5.5;
+    y = board_h-side_hinge_gap;
+    z = 0;
+    n = [100, 100, -150];
+    
+    round_corner([xo, y, z], n)
+    round_corner([board_w-xo,y,z], [-n[0],n[1],n[2]])
+    children();
+}
+    
+module sides(d) {
+    translate([0,0,-d])
+    sides_rounding(d)
+    sides_main(d);
+}
+
+module top_plate_countersinks() {
+    translate([0,0,screw_countersink_depth])
+            top_plate_screwholes(screw_countersink_diameter);
+}
+
+module top_plate() {
     color("orange")
     union() {
         difference() {
-            remove_cutout() {
-                difference() {
-                    intersection() {
-                        cube([board_w, board_h, plate_thickness]);
-                        
-                        scale([1,1,-1])
-                        rounded_thing(board_w, board_h, clamshell_depth_t);
-                    }
-                    top_clamshell(board_w, board_h, clamshell_depth_t);
-                }
-                
-                top_screw_holes();
-                
-                translate([0,0,-20])
-                linear_extrude(20)
+            linear_extrude(plate_thickness)
+            difference() {
+                top_plate_shape();
+                projection()
+                top_plate_screwholes();
                 top_cutouts();
             }
             
-            // Countersinks
-            translate([0,0,screw_countersink_depth])
-            top_screw_holes(screw_countersink_diameter / 2);
+            top_plate_countersinks()
+            hinge_hole_top(od=hinge_od);
             
-            hinge_hole_top(od=8);
+            translate([board_w/2, board_h-25,-nothing])
+            mirror([0,1,0])
+            logo(10);
         }
- 
-        if (include_battery_box)
-            translate([board_w-35,30,plate_thickness])
-            battery_holder();
+        
         battery_holder_attach();
         
+        sides(keycap_height);
+        translate([0,0,-keycap_height])
         handle_top();
+        
         hinge_top();
     }
 }
@@ -463,9 +611,15 @@ module top_clamshell(w, h, d) {
     }
 }
 
+module logo_offset(d=0) {
+    translate([board_w/2, board_h/2, d])
+    children();
+}
 module logo(size=10) {
-    linear_extrude(logo_depth)
-    translate([board_w/2, board_h/2])
+    font = abs(size);
+    reversed = size <= 0 ? 1 : 0;
+    
+    linear_extrude(logo_depth)    
     text("Zorchpad", size, halign="center", valign="center");
 }
 
@@ -478,15 +632,17 @@ module top_piece() {
             remove_cutout() {
                 intersection() {
                     infinitely_tall()
-                    top_screw_holes(screw_insert_diameter / 2);
+                    top_clamshell_screwholes(screw_insert_diameter);
                     
                     rounded_thing(board_w, board_h, clamshell_depth_t);
                 }
-                top_screw_holes();
+                top_clamshell_screwholes();
             }
         }
         
-        translate([0,0,-clamshell_depth_t])
+        if (logo_back)
+        logo_offset(-clamshell_depth_t)
+        mirror([1,0,0])
         logo(20);
         
         microsd_port();
@@ -500,25 +656,20 @@ module bottom_clamshell(w, h, d) {
         color("pink")
         remove_cutout() {
             rounded_thing(w, h, d);
-            bottom_screw_holes();
+            bottom_clamshell_screwholes();
         }
         
         // Countersink
         translate([0,0,-d+screw_countersink_depth])
-        bottom_screw_holes(screw_countersink_diameter / 2);
+        bottom_clamshell_screwholes(screw_countersink_diameter);
         
-        translate([0,0,-logo_depth+nothing])
+        if (logo_hidden)
+        logo_offset(-logo_depth+nothing)
+        rotate([0,0,180])
         logo(30);
     }
 }
 
-handle_size = [80, 25];
-handle_length = handle_size[0];
-handle_width = handle_size[1];
-handle_groove_size = [50, 15];
-handle_groove_length = handle_groove_size[0];
-handle_groove_width = handle_groove_size[1];
-handle_rounding = 1;
 module handle_base(thickness) {
     translate([board_w/2-handle_length/2,-handle_width+handle_rounding,0])
     intersection() {
@@ -540,34 +691,48 @@ module handle_base(thickness) {
 }
 
 module audio_port() {
-    translate([0,60,-11.6])
-    rotate([0,0,270]) {
-        translate([29.5,0,11.6/2])
-        rotate([270,0,0])
-        cylinder(d=6.8, h=7.7);
+    // Height of the boxy part of the jack
+    bh=11.6;
+    // Diameter of the jack cylinder
+    cd = 8;
+    // Length of the jack cyclinder
+    ch = 7.7;
     
-        translate([32-6,3.7,0])
-        cube([10.5, 12, 11.6]);
+    translate([0,60,-bh])
+    rotate([0,0,270]) {
+        translate([29.5,0,bh/2]) {
+            rotate([270,0,0])
+            cylinder(d=cd, h=ch);
         
+            //translate([32-6,3.7,0])
+            translate([-cd/2,0+ch-nothing,-bh/2])
+            cube([cd, 12, bh]);
+        }
     }
 }
 
 module microsd_port() {
-    translate([0,board_h-40,-2.1+nothing])
+    spacer = 3;
+    translate([0,board_h-40,-2.1-spacer+nothing])
     cube([31.9,24,2.1]);
 }
 module magnet_holes() {
-    translate([board_w/2-handle_length/2+(handle_width-handle_groove_width)/2+magnet_diameter/2,-handle_width/2+magnet_diameter,-magnet_thickness])
+    hole_diameter = magnet_diameter + 0.5;
+    hole_depth = magnet_thickness + 0.5;
     
-    cylinder(h=magnet_thickness, d=magnet_diameter);
+    translate([board_w/2-handle_length/2+(handle_width-handle_groove_width)/2+hole_diameter/2,-handle_width/2+hole_diameter,-hole_depth])
     
-    translate([board_w/2+handle_length/2-(handle_width-handle_groove_width)/2-magnet_diameter/2,-handle_width/2+magnet_diameter+handle_rounding,-magnet_thickness])
+    cylinder(h=hole_depth, d=hole_diameter);
     
-    cylinder(h=magnet_thickness, d=magnet_diameter);
+    translate([board_w/2+handle_length/2-(handle_width-handle_groove_width)/2-hole_diameter/2,-handle_width/2+hole_diameter+handle_rounding,-hole_depth])
+    
+    cylinder(h=hole_depth, d=hole_diameter);
 }
+
+handle_top_thickness = 4;
 module handle_top() {
     difference() {
-        handle_base(plate_thickness);
+        handle_base(handle_top_thickness);
         
         translate([0,0,magnet_thickness-nothing])
         magnet_holes();
@@ -575,20 +740,23 @@ module handle_top() {
 }
 module handle_bottom() {
     difference() {
-        handle_base(keyboard_thickness);
+    //union() {
+        translate([0,0,-spacer_height])
+        handle_base(keyboard_thickness+spacer_height);
     
         translate([0,0,keyboard_thickness+nothing])
         magnet_holes();
         
-        translate([board_w/2,-handle_width,keyboard_thickness])
-rotate([20,0,0])
-cube([30, 15, 5], center=true);
+        translate([board_w/2,-handle_width+2,keyboard_thickness])
+        rotate([70,0,0])
+        cube([30, 15, 5], center=true);
     }
 }
 
-hinge_offset=1;
+
+
 module hinge_offset_bottom(off, od) {
-   translate([off,board_h+hinge_offset,0.9+plate_thickness
+   translate([off,board_h+hinge_offset,plate_thickness+hinge_offset_bottom
 ]) children();
 }
 module hinge_offset_top(off, od) {
@@ -598,25 +766,30 @@ module hinge_offset_top(off, od) {
 
 
 module hinge_part(w, od, id, c) {
+    // Width, outer diameter, inner diameter, cube support
+    part_w = w - hinge_w_safety;
+    w_offset = hinge_w_safety/2;
     difference() {
         union() {
+        translate([w_offset,0,0])
         rotate([0,90,0])
-        cylinder(h=w,d=od);
+        
+        cylinder(h=w-hinge_w_safety,d=od);
         
         if (c)
-        translate([0,-od/2,-od/2])
-        cube([w,hinge_offset+od/2,od]);
+        translate([w_offset,-od/2,-od/2])
+        cube([part_w,hinge_offset+od/2,od]);
         }
     
         if (id > 0)
             translate([-nothing/2,0,0])
             rotate([0,90,0])
-            cylinder(h=w+nothing,d=id);
+            cylinder(h=w+nothing,d=id+hinge_id_safety);
     }
 }
 
 module hinge_hole_top(od) {
-    w=102;
+    w=hinge_w;
     part_w=w/6;
     
     hinge_offset_top(part_w+nothing/2, od)
@@ -624,13 +797,17 @@ module hinge_hole_top(od) {
 }
 
 module hinge_hole_bottom(od) {
-    hinge_offset_bottom(0, od)
-    hinge_part(board_w,od,0,false);
+    hinge_offset_bottom(0, od) {        
+        hinge_part(board_w,od,0,false);
+        
+        translate([-nothing/2,-od/2-nothing/2,nothing/2])
+        cube([board_w+nothing, od+nothing, od/2+big]);
+    }
 }
 
 module hinge_part_top(off, w, od, id) {
     hinge_offset_top(off, od)
-    hinge_part(w,od,id, false);
+    hinge_part(w,od,id,false);
 }
 
 module hinge_part_bottom(off, w, od, id) {
@@ -639,98 +816,113 @@ module hinge_part_bottom(off, w, od, id) {
 }
 
 module hinge_top() {
-    w=102;
-    od=8;
-    id=2;
+    w=hinge_w;
+    od=hinge_od;
+    id=hinge_id;
     part_w=w/6;
     
     for (i = [1,3,5]) {
-        hinge_part_top(part_w*i,part_w,od=8,id=2);
+        hinge_part_top(part_w*i,part_w,od,id);
     }
     
     for (i = [2,4,6]) {
-        hinge_part_top(board_w-part_w*i,part_w,od=8,id=2);
+        hinge_part_top(board_w-part_w*i,part_w,od,id);
     }
 }
 
-module hinge_tapered_holes(id, depth) {
-    translate([-nothing/2,board_h+hinge_offset,0.9+plate_thickness])
+module hinge_tapered_holes(od, id, depth) {
+    translate([0,0,hinge_offset_bottom]){
+    
+    translate([-nothing/2,board_h+hinge_offset,plate_thickness])
     rotate([0,90,0])
     cylinder(h=depth,d1=id*1.5,d2=id);
     
-    translate([board_w+nothing/2,board_h+hinge_offset,0.9+plate_thickness])
+    translate([board_w+nothing/2,board_h+hinge_offset,plate_thickness])
     rotate([0,270,0])
     cylinder(h=depth,d1=id*1.5,d2=id);
+        
+    }
 }
 
 module hinge_bottom() {
-    w=102;
-    od=8;
-    id=2;
+    w=hinge_w;
+    od=hinge_od;
+    id=hinge_id;
+    
     part_w=w/6;
     
     difference() {
     union() {    
         for (i = [0,2,4]) {
-            hinge_part_bottom(part_w*i,part_w,od=8,id=2);
+            hinge_part_bottom(part_w*i,part_w,od,id);
         }
         
         for (i = [1,3,5]) {
-            hinge_part_bottom(board_w-part_w*i,part_w,od=8,id=2);
+            hinge_part_bottom(board_w-part_w*i,part_w,od,id);
         }
         
         // center solid
-        center_w = board_w-102*2;
-        hinge_part_bottom(102,w=center_w, od=8, id=0);
+        center_w = board_w-w*2;
+        hinge_part_bottom(w,center_w, od, 0);
     }
     // Two tapered holes at the end, to help the pins lock in place
-    hinge_tapered_holes(2, part_w/2);
+    hinge_tapered_holes(od, 2, part_w/2);
     
     
     }
 }
 
-cool_render = false;
 if (part && part == "top_shell") {
     top_piece();
 } else if (part && part == "top_plate") {
     translate([0, board_h, plate_thickness])
     rotate([0,180,180])
-    top_plate(false);
+    top_plate();
 } else if (part && part == "bottom_shell") {
     bottom_clamshell(board_w, board_h, clamshell_depth_b);
 } else if (part && part == "keyboard_plate") {
-    translate([0,handle_width,0])
+    translate([board_w,handle_width,keyboard_thickness+spacer_height])
+    rotate([0,180,0])
     keyboard_plate();
 } else if (part && part == "battery_box") {
     translate([27,0,13])
     rotate([0,180,0])
     battery_holder();
 } else if (cool_render) {
-    translate([0, 0, clamshell_depth_b*20])
-    scale([1,1,-1])
+    // Assembly Render
+    translate([0, board_h, clamshell_depth_b*20])
+    rotate([0,180,180])
     top_piece();
 
     translate([0, 0, clamshell_depth_b*10])
-    top_plate(true);
-
-    keyboard_plate();
-
-    translate([0, 0, -clamshell_depth_b*10])
-    bottom_clamshell(board_w, board_h, clamshell_depth_b);
-} else {
-    translate([0, 150, 0])
-    top_piece();
-
-    translate([470, 0, plate_thickness])
-    rotate([0,180,0])
-    top_plate(false);
+    rotate([180,180,180])
+    top_plate();
     
-    translate([520, 0, 13])
+    translate([-8,30,0])
+    translate([board_w,0,clamshell_depth_b*10])
     rotate([0,180,0])
     battery_holder();
 
-    translate([250, 150, 0])
+    keyboard_plate();
+
+    translate([board_w, board_h, -clamshell_depth_b*10])
+    rotate([0,0,180])
+    bottom_clamshell(board_w, board_h, clamshell_depth_b);
+} else {
+    // Printing Preview
+    translate([0, 150, 0])
+    top_piece();
+
+    translate([450, 0, plate_thickness])
+    rotate([0,180,0])
+    top_plate();
+    
+    translate([265, -100, 13])
+    rotate([0,180,0])
+    battery_holder();
+
+    translate([450, 150, (keyboard_thickness+spacer_height)])
+    rotate([0,180,0])
     keyboard_plate();
 
     translate([0, 0, 0])

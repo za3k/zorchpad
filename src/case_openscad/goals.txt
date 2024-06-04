@@ -3,21 +3,26 @@
 
 Fix problems
 
-[ ] Move hinge on KB
-[ ] Flip KB upside down
-[ ] Make handle thick
-[ ] Expand magnet holes
-[ ] Expand handle
-[ ] Widen screw holes
-[ ] Narrow key holes
-[ ] Rotate sharp displays
-[ ] Widen screw countersinks
-[ ] Add countersinks to battery case
-[ ] Make power switch longer
-[ ] Made sharp cutout longer
-[ ] Make vertical part (round)
 [ ] Add hinge stop
-[ ] Expand hinge holes
-[ ] Narrow hinge pieces
-[ ] Add space for keys when closed
-[ ] Handle indent all the way
+  - no. get working first
+[X] Make blue piece print without sticking
+[x] Add space for keys when 
+    closed
+[x] Line up top screws
+[x] Expand hinge holes
+[x] Narrow hinge pieces
+[x] Widen screw countersinks
+[x] Make room for hinge movement on KB plate
+[x] Add countersinks to battery case
+[x] Make vertical part (round)
+[x] Move hinge on KB
+[x] Flip KB upside down
+[x] Expand handle
+[x] Make handle thick
+[x] Handle indent all the way
+[x] Expand magnet holes
+[x] Widen screw holes
+[x] Narrow key holes
+[x] Rotate sharp displays
+[x] Make power switch longer
+[x] Made sharp cutout longer
