@@ -3,15 +3,15 @@
 // TO EXPORT STL FILES, run the following in a shell:
 //   for part in top_shell bottom_shell keyboard_plate top_plate battery_box; do openscad -D part=\"$part\" -o $part.stl "case.scad" done
 // (or if you have no idea what that means, change this variable:
-part = "";
+part = "hinge";
 // To each of the 5 values listed above and export STL manually after each re-render.
 cool_render = false;
 
-
+side_thickness = 1;
 keyboard_thickness = 4.8;
 
 // Add a little extra room on the keyboard edges (l, r, t, b)
-keyboard_edges = [0, 0, 5, 2];
+keyboard_edges = [side_thickness, side_thickness, 5, 2];
 // There's a rim around the bottom of the keyboard to hold it up. How wide is it?
 keyboard_rim = 1.5;
 // How tall is the rim around the keyboard and the spacers
@@ -81,14 +81,13 @@ handle_rounding = 1;
 
 // Hinge
 hinge_offset=1;
-hinge_offset_bottom=-1.5;
+hinge_offset_bottom=-1.5-keycap_height;
 hinge_w=102;
 hinge_od=7;
 hinge_id=2;
 hinge_id_safety=2;
 hinge_w_safety=1;
 
-side_thickness = 1;
 side_hinge_gap_safety=1;
 side_hinge_gap = hinge_od/2+side_hinge_gap_safety;
 
@@ -252,6 +251,48 @@ module bottom_screw_holes(d) {
     screw_hole(rows-1, cols-1, d);
 }
 
+module edge_supports() {
+    // Bottom
+    translate([0, board_h-keyboard_rim, -spacer_height])
+    cube([board_w, keyboard_rim, spacer_height]);
+
+    // Right
+    translate([0, 0, -spacer_height])
+    cube([keyboard_rim, board_h, spacer_height]);
+
+    // Left
+    translate([board_w-keyboard_rim, 0, -spacer_height])
+    cube([keyboard_rim, board_h, spacer_height]);
+}
+
+module hinge_support_bottom() {
+    top_rim_thickness = 4;
+    top_pin_edge = 1.7;
+    gap_width = pins_width;
+    translate([0, board_h-top_rim_thickness-2.5, -keycap_height])
+    difference() {
+        cube([board_w, top_rim_thickness, keycap_height]);
+            
+        translate([board_w/2-gap_width/2, -nothing/2, -nothing/2])
+        cube([gap_width+nothing, top_rim_thickness-top_pin_edge+nothing, keycap_height+nothing]);
+    }
+}
+
+module all_key_supports() {
+        difference() {
+        intersection() {
+            translate([0,0,-big/2]) cube([board_w, board_h, big]);
+            key_supports();
+        }
+        
+        translate([0,0,-big/2])
+        linear_extrude(height=big)
+        pin_hole();
+        
+        keyboard_screwholes();
+    }
+}
+
 module keyboard_plate_main() {
     scale([1,-1,1]) {
         linear_extrude(height=keyboard_thickness)
@@ -263,41 +304,12 @@ module keyboard_plate_main() {
                 pin_hole();
             }
         }
-        
+            
         // Edge supports
-        // this one is full thickness to support the hinge
-        top_rim_thickness = edge_top;
-        gap_width = pins_width + 1;
-        translate([0, 0, -spacer_height])
-        difference() {
-            cube([board_w, top_rim_thickness, spacer_height]); // Top
-            
-            translate([board_w/2-gap_width/2, -nothing/2, -nothing/2])
-            cube([gap_width+nothing, top_rim_thickness+nothing, spacer_height+nothing]);
-        }
-            
-        translate([0, board_h-keyboard_rim, -spacer_height])
-        cube([board_w, keyboard_rim, spacer_height]); // Bottom
-
-        translate([0, 0, -spacer_height])
-        cube([keyboard_rim, board_h, spacer_height]); // Right
-        
-        translate([board_w-keyboard_rim, 0, -spacer_height])
-        cube([keyboard_rim, board_h, spacer_height]); // Left
+        edge_supports();
         
         // Grid intersection supports
-        difference() {
-            intersection() {
-                translate([0,0,-big/2]) cube([board_w, board_h, big]);
-                key_supports();
-            }
-            
-            translate([0,0,-big/2])
-            linear_extrude(height=big)
-            pin_hole();
-            
-            keyboard_screwholes();
-        }
+        all_key_supports();
     }
 }
 
@@ -313,6 +325,8 @@ module keyboard_plate() {
         }
         
         handle_bottom();
+        
+        hinge_support_bottom();
         hinge_bottom();
     }
 }
@@ -888,6 +902,19 @@ if (part && part == "top_shell") {
     translate([27,0,13])
     rotate([0,180,0])
     battery_holder();
+} else if (part && part == "hinge") {
+    intersection() {
+        cube([board_w,40,30]);
+        union() {
+            translate([board_w, -90, plate_thickness])
+            rotate([0,180,0])
+            top_plate();
+            
+            translate([0, 130, (keyboard_thickness+spacer_height)])
+            rotate([0,180,180])
+            keyboard_plate();
+        }
+    }
 } else if (cool_render) {
     // Assembly Render
     translate([0, board_h, clamshell_depth_b*20])
