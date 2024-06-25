@@ -5,9 +5,9 @@
 // (or if you have no idea what that means, change this variable:
 part = "";
 // To each of the 5 values listed above and export STL manually after each re-render.
-cool_render = false;
+cool_render = true;
 
-side_thickness = 1;
+side_thickness = 2;
 keyboard_thickness = 4.8;
 
 // Add a little extra room on the keyboard edges (l, r, t, b)
@@ -81,7 +81,8 @@ handle_rounding = 1;
 
 // Hinge
 hinge_offset=1;
-hinge_offset_bottom=-1.5-keycap_height;
+//hinge_offset_bottom=-1.5-keycap_height;
+hinge_offset_bottom=-.7;
 hinge_w=102;
 hinge_od=7;
 hinge_id=2;
@@ -326,8 +327,9 @@ module keyboard_plate() {
         
         handle_bottom();
         
-        hinge_support_bottom();
+        //hinge_support_bottom();
         hinge_bottom();
+        //hinge_hole_bottom(od=hinge_od);
     }
 }
 
@@ -508,7 +510,12 @@ module eink_screen_cutout() {
 module sharp_screen_cutout() {
     square([64, 43]);
 }
-    
+
+module top_plate_shape() {
+    square([board_w, board_h]);
+}
+
+/* Cool looking version
 module top_plate_shape() {
     projection()
     difference() {
@@ -521,6 +528,7 @@ module top_plate_shape() {
         top_clamshell(board_w, board_h, clamshell_depth_t);
     }
 }
+*/
 
 module outline(t) {
     difference() {
@@ -532,14 +540,9 @@ module outline(t) {
 }
 
 module sides_main(d) { 
-    intersection() {
-        cube([board_w,board_h-side_hinge_gap,d]);
-    
-        
-        linear_extrude(d) {    
-            outline(side_thickness)
-            top_plate_shape();
-        }
+    linear_extrude(d) {    
+        outline(side_thickness)
+        top_plate_shape();
     }
 }
 
@@ -560,23 +563,9 @@ module round_corner(corner, normal) {
         }
     }    
 }
-
-module sides_rounding(d) {
-    // Round the two nasty interior corners
-    
-    xo = 5.5;
-    y = board_h-side_hinge_gap;
-    z = 0;
-    n = [100, 100, -150];
-    
-    round_corner([xo, y, z], n)
-    round_corner([board_w-xo,y,z], [-n[0],n[1],n[2]])
-    children();
-}
     
 module sides(d) {
     translate([0,0,-d])
-    sides_rounding(d)
     sides_main(d);
 }
 
@@ -597,8 +586,6 @@ module top_plate() {
                 top_cutouts();
             }
             
-            hinge_hole_top(od=hinge_od);
-            
             top_plate_countersinks()
             translate([board_w/2, board_h-25,-nothing])
             mirror([0,1,0])
@@ -607,12 +594,15 @@ module top_plate() {
         
         battery_holder_attach();
         
-        sides(keycap_height);
+        difference() {
+            sides(keycap_height);
+            hinge_hole_top(od=hinge_od);
+        }
+        
         translate([0,0,-keycap_height])
         handle_top();
         
         hinge_top();
-        //hinge_hole_top(od=hinge_od);
     }
 }
 
@@ -775,7 +765,7 @@ module hinge_offset_bottom(off, od) {
 ]) children();
 }
 module hinge_offset_top(off, od) {
-    translate([off,board_h+hinge_offset,0-plate_thickness]) children();
+    translate([off,board_h+hinge_offset,0-plate_thickness-keycap_height]) children();
 }
 
 
@@ -808,10 +798,9 @@ module hinge_part(w, od, id, c, reversed) {
 
 hinge_diameter_gap = 1;
 module hinge_hole_top(od) {
-    w=hinge_w;
+    part_w=hinge_w/6;
     
-    part_w=w/6;
-    
+    // Center hole
     hinge_offset_top(part_w+nothing/2, od)
     hinge_part(board_w-part_w*2-nothing,od-nothing,0,false);
     
@@ -826,11 +815,22 @@ module hinge_hole_top(od) {
 }
 
 module hinge_hole_bottom(od) {
+    /*
     hinge_offset_bottom(0, od) {        
         hinge_part(board_w,od,0,false);
         
         translate([-nothing/2,-od/2-nothing/2,nothing/2])
         cube([board_w+nothing, od+nothing, od/2+big]);
+    }*/
+    
+    part_w=hinge_w/6;
+    // Remove where the hinge will go
+    for (i = [1,3,5]) {
+        hinge_part_bottom(part_w*i,part_w,od+hinge_diameter_gap,0, true);
+    }
+    
+    for (i = [1,3,5]) {
+        hinge_part_bottom(board_w-part_w*(i+1),part_w,od+hinge_diameter_gap,0, true);
     }
 }
 
@@ -841,6 +841,7 @@ module hinge_part_top(off, w, od, id, reversed=false) {
 
 module hinge_part_bottom(off, w, od, id, reversed=false) {
     hinge_offset_bottom(off, od)
+    //hinge_part(w,od,id,!reversed,reversed);
     hinge_part(w,od,id,true,reversed);
 }
 
@@ -940,9 +941,8 @@ if (part && part == "top_shell") {
     rotate([180,180,180])
     top_plate();
     
-    translate([-8,30,0])
+    translate([-35,30,plate_thickness])
     translate([board_w,0,clamshell_depth_b*10])
-    rotate([0,180,0])
     battery_holder();
 
     keyboard_plate();
