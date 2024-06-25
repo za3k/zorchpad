@@ -3,7 +3,7 @@
 // TO EXPORT STL FILES, run the following in a shell:
 //   for part in top_shell bottom_shell keyboard_plate top_plate battery_box; do openscad -D part=\"$part\" -o $part.stl "case.scad" done
 // (or if you have no idea what that means, change this variable:
-part = "";
+part = "top_plate";
 // To each of the 5 values listed above and export STL manually after each re-render.
 cool_render = true;
 
@@ -96,6 +96,8 @@ side_hinge_gap = hinge_od/2+side_hinge_gap_safety;
 logo_back = true;
 logo_ui = true;
 logo_hidden = true;
+
+top_plate_rounded = true;
 
 // Sides (attached to top plate)
 
@@ -512,12 +514,10 @@ module sharp_screen_cutout() {
     square([64, 43]);
 }
 
-module top_plate_shape() {
-    square([board_w, board_h]);
-}
 
-/* Cool looking version
 module top_plate_shape() {
+    if (top_plate_rounded) {
+
     projection()
     difference() {
         intersection() {
@@ -528,8 +528,10 @@ module top_plate_shape() {
         }
         top_clamshell(board_w, board_h, clamshell_depth_t);
     }
+    } else {
+        square([board_w, board_h]);
+    }
 }
-*/
 
 module outline(t) {
     difference() {
