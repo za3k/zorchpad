@@ -7,7 +7,7 @@ part = "";
 // To each of the 5 values listed above and export STL manually after each re-render.
 cool_render = true;
 
-side_thickness = 2;
+side_thickness = 0.8;
 keyboard_thickness = 4.8;
 
 // Add a little extra room on the keyboard edges (l, r, t, b)
@@ -26,8 +26,9 @@ edge_bottom = keyboard_edges[3];
 grid = [12, 5];
 rows = grid[1]; cols = grid[0];
 // Horizontal and vertical key spacing
-key_size = [17.8, 17.8];
-key_gap_size = [0.25, 0.25];
+//18.25 vs 18.3
+key_size = [18.05, 18.05];
+key_gap_size = [0.125, 0.125];
 key_pitch = [key_size[0]+key_gap_size[0],key_size[1]+key_gap_size[1]];
 key_spacing_h = key_pitch[0];
 key_spacing_v = key_pitch[1];
@@ -179,8 +180,8 @@ module key_support(x, y, width) {
     );
 }
 
-board_w = edge_left + key_spacing_h * cols + edge_right;
-board_h = edge_top  + key_spacing_v * rows + edge_bottom;
+board_w = edge_left + key_spacing_h * cols + edge_right;// + 2*key_gap_size[0];
+board_h = edge_top  + key_spacing_v * rows + edge_bottom;// + 2*key_gap_size[1];
 
 module pin_hole() {
     min_gap_to_keys = (key_spacing_v-hole_size_v);
