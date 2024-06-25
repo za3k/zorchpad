@@ -3,7 +3,7 @@
 // TO EXPORT STL FILES, run the following in a shell:
 //   for part in top_shell bottom_shell keyboard_plate top_plate battery_box; do openscad -D part=\"$part\" -o $part.stl "case.scad" done
 // (or if you have no idea what that means, change this variable:
-part = "hinge";
+part = "";
 // To each of the 5 values listed above and export STL manually after each re-render.
 cool_render = false;
 
@@ -27,7 +27,7 @@ grid = [12, 5];
 rows = grid[1]; cols = grid[0];
 // Horizontal and vertical key spacing
 key_size = [17.8, 17.8];
-key_gap_size = [0.5, 0.5];
+key_gap_size = [0.25, 0.25];
 key_pitch = [key_size[0]+key_gap_size[0],key_size[1]+key_gap_size[1]];
 key_spacing_h = key_pitch[0];
 key_spacing_v = key_pitch[1];
@@ -597,9 +597,9 @@ module top_plate() {
                 top_cutouts();
             }
             
-            top_plate_countersinks()
             hinge_hole_top(od=hinge_od);
             
+            top_plate_countersinks()
             translate([board_w/2, board_h-25,-nothing])
             mirror([0,1,0])
             logo(10);
@@ -612,6 +612,7 @@ module top_plate() {
         handle_top();
         
         hinge_top();
+        //hinge_hole_top(od=hinge_od);
     }
 }
 
@@ -779,35 +780,49 @@ module hinge_offset_top(off, od) {
 
 
 
-module hinge_part(w, od, id, c) {
+module hinge_part(w, od, id, c, reversed) {
     // Width, outer diameter, inner diameter, cube support
-    part_w = w - hinge_w_safety;
-    w_offset = hinge_w_safety/2;
+    
+    // Normal or cutout safety
+    poffset = hinge_w_safety/2 * (reversed ? -1 : 1);
+    part_w = w + hinge_w_safety * (reversed ? 1 : -1);
+    
+    translate([poffset,0,0])
     difference() {
         union() {
-        translate([w_offset,0,0])
-        rotate([0,90,0])
         
-        cylinder(h=w-hinge_w_safety,d=od);
+        rotate([0,90,0])
+        cylinder(h=part_w,d=od);
         
         if (c)
-        translate([w_offset,-od/2,-od/2])
+        translate([0,-od/2,-od/2])
         cube([part_w,hinge_offset+od/2,od]);
         }
     
         if (id > 0)
             translate([-nothing/2,0,0])
             rotate([0,90,0])
-            cylinder(h=w+nothing,d=id+hinge_id_safety);
+            cylinder(h=part_w+nothing,d=id+hinge_id_safety);
     }
 }
 
+hinge_diameter_gap = 1;
 module hinge_hole_top(od) {
     w=hinge_w;
+    
     part_w=w/6;
     
     hinge_offset_top(part_w+nothing/2, od)
     hinge_part(board_w-part_w*2-nothing,od-nothing,0,false);
+    
+    // Remove where the hinge will go
+    for (i = [0,2,4]) {
+        hinge_part_top(part_w*i,part_w,od+hinge_diameter_gap,0, true);
+    }
+    
+    for (i = [0,2,4]) {
+        hinge_part_top(board_w-part_w*(i+1),part_w,od+hinge_diameter_gap,0, true);
+    }
 }
 
 module hinge_hole_bottom(od) {
@@ -819,14 +834,14 @@ module hinge_hole_bottom(od) {
     }
 }
 
-module hinge_part_top(off, w, od, id) {
+module hinge_part_top(off, w, od, id, reversed=false) {
     hinge_offset_top(off, od)
-    hinge_part(w,od,id,false);
+    hinge_part(w,od,id,false,reversed);
 }
 
-module hinge_part_bottom(off, w, od, id) {
+module hinge_part_bottom(off, w, od, id, reversed=false) {
     hinge_offset_bottom(off, od)
-    hinge_part(w,od,id,true);
+    hinge_part(w,od,id,true,reversed);
 }
 
 module hinge_top() {
@@ -955,3 +970,5 @@ if (part && part == "top_shell") {
     translate([0, 0, 0])
     bottom_clamshell(board_w, board_h, clamshell_depth_b);
 }
+
+echo(board_w);
