@@ -1,13 +1,16 @@
-bed_size = [220,220];
+bed_size = [230,210];
 w = 1;//0.5;
+h = 0.2;
 
 for (x = [0:10:bed_size[0]]) {
-    translate([x, 0, 0])
+    if (x%50 == 0 || x > 200) 
+    translate([max(0, x-w), 0, 0])
     rotate([-90,0,0])
-    cylinder(h=bed_size[1], d=w);
+    cube([w, h, bed_size[1]]);
 }
 for (y = [0:10:bed_size[1]]) {
-    translate([0, y, 0])
+    if (y%50 == 0 || y > 200) 
+    translate([0, max(0, y-w), 0])
     rotate([0,90,0])
-    cylinder(h=bed_size[1], d=w);
+    cube([h, w, bed_size[0]]);
 }

@@ -3,8 +3,10 @@
 Available (small package)
     BTLE
     33 pins (?)
+    Will require either surface-mount soldering or whisker-thin wires (quite small but not theoretically un-doable)
 Available (large package)
     22 pins (?)
+    Can just use standard pitch headers
 
 Requirements:
 
@@ -13,7 +15,7 @@ Requirements:
     7 pins (5 out, 2 IO) - SPI
         4 devices: Screen 1, Screen 2, MicroSD, E-ink
         4x chip select, 1 clock, 1 MOSI, 1 MISO
-    2 pins (2 out) - Headphones
+    2? pins (2 out) - Headphones
     0 pins - Microphone (integrated)
     GPIO (3 IO?)
         (shared clock with SPI)

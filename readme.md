@@ -11,11 +11,18 @@ The 'zorchpad emulator'. A basic C interface, abstracting the hardware of the zo
 ## Arduino Sketches
 
 - `audio_out`: Basic beep, by rapidly toggling one pin
-- `demo_screen`: A general graphics demo for the SHARP memory
+- `demo_screen`: A general graphics demo for the SHARP display
 - `display_ram`: Output the contents of memory to the serial console and the SHARP display.
 - `font`: Display text to the SHARP screen
+- `keyboard_echo`: Echoes text from the keyboard to the SHARP display
 - `morse_out`: Output arbitrary text to audio using morse code
 - `sharp_memory_display`: Make something appear on the SHARP display
+
+## Other
+- `case_openscad`: Design of a case to hold all the parts (discontinued)
+- `keyboard_layout`: Python code to generate an image of the keyboard layout.
+- `yeso`/`zeso`: A low-level graphics library, used by emulator.
+- `zi`: A very simple text editor based on ae.c by Anthony Howe. (unfinished)
 
 ## Parts List
 

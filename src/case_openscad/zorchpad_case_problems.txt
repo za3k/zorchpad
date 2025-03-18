@@ -1,3 +1,12 @@
+Hinge:
+    Problem: The hinge does not freely move
+    Solution: give an "empty" area around the opposite piece for each hinge area
+
+    Problem: The hinge runs into the sides
+    Solution: Remove the last bit of the flat or of the side
+
+================
+
 Piece 1: Keyboard
     Problem: There are a lot of supports i need to tear out.
     Solution 1:

@@ -3,6 +3,8 @@ Power Usage
 - Power usage will be around 0.3mA @ 3V when active (0.001 W = 0.001 J/s)
 - Power usage will be around 1nA @ 3V when asleep (0.000000003 W = 0.000003 J/s)
 
+- On 2024-08-20 I tested an e-ink power supply (Waveshare 8" display) and tried updating one character at a time, watching an oscilloscope to measure power roughly. I calculated that a refresh takes 0.0375J (4ms x 250 mA x 5V) -- affordable once per 37s. I did not test cleanly how much changing different fractions of the screen affected the power.
+
 Continuous Power Sources
 
 - Solar

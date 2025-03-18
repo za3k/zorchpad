@@ -81,17 +81,12 @@ handle_groove_width = handle_groove_size[1];
 handle_rounding = 1;
 
 // Hinge
-hinge_offset=1;
-//hinge_offset_bottom=-1.5-keycap_height;
-hinge_offset_bottom=-.7;
-hinge_w=102;
-hinge_od=7;
-hinge_id=2;
-hinge_id_safety=2;
-hinge_w_safety=1;
-
-side_hinge_gap_safety=1;
-side_hinge_gap = hinge_od/2+side_hinge_gap_safety;
+hinge_w=0;
+hinge_h=0;
+hinge_d=0;
+hinge_hole_dia=0;
+hinge_hole_offset1=0;
+hinge_hole_offset2=0;
 
 logo_back = true;
 logo_ui = true;
@@ -325,14 +320,10 @@ module keyboard_plate() {
             translate([0,board_h,0])
             keyboard_plate_main();
             
-            hinge_hole_bottom(od=hinge_od);
+            hinge_inset_bottom();
         }
         
         handle_bottom();
-        
-        //hinge_support_bottom();
-        hinge_bottom();
-        //hinge_hole_bottom(od=hinge_od);
     }
 }
 
@@ -589,23 +580,21 @@ module top_plate() {
                 top_cutouts();
             }
             
+            hinge_inset_top();
+            
             top_plate_countersinks()
             translate([board_w/2, board_h-25,-nothing])
             mirror([0,1,0])
             logo(10);
+            
         }
         
         battery_holder_attach();
         
-        difference() {
-            sides(keycap_height);
-            hinge_hole_top(od=hinge_od);
-        }
+        sides(keycap_height);
         
         translate([0,0,-keycap_height])
         handle_top();
-        
-        hinge_top();
     }
 }
 
@@ -761,148 +750,13 @@ module handle_bottom() {
     }
 }
 
-
-
-module hinge_offset_bottom(off, od) {
-   translate([off,board_h+hinge_offset,plate_thickness+hinge_offset_bottom
-]) children();
-}
-module hinge_offset_top(off, od) {
-    translate([off,board_h+hinge_offset,0-plate_thickness-keycap_height]) children();
+module hinge_inset_top() {
+    
 }
 
 
+module hinge_inset_bottom() {
 
-module hinge_part(w, od, id, c, reversed) {
-    // Width, outer diameter, inner diameter, cube support
-    
-    // Normal or cutout safety
-    poffset = hinge_w_safety/2 * (reversed ? -1 : 1);
-    part_w = w + hinge_w_safety * (reversed ? 1 : -1);
-    
-    translate([poffset,0,0])
-    difference() {
-        union() {
-        
-        rotate([0,90,0])
-        cylinder(h=part_w,d=od);
-        
-        if (c)
-        translate([0,-od/2,-od/2])
-        cube([part_w,hinge_offset+od/2,od]);
-        }
-    
-        if (id > 0)
-            translate([-nothing/2,0,0])
-            rotate([0,90,0])
-            cylinder(h=part_w+nothing,d=id+hinge_id_safety);
-    }
-}
-
-hinge_diameter_gap = 1;
-module hinge_hole_top(od) {
-    part_w=hinge_w/6;
-    
-    // Center hole
-    hinge_offset_top(part_w+nothing/2, od)
-    hinge_part(board_w-part_w*2-nothing,od-nothing,0,false);
-    
-    // Remove where the hinge will go
-    for (i = [0,2,4]) {
-        hinge_part_top(part_w*i,part_w,od+hinge_diameter_gap,0, true);
-    }
-    
-    for (i = [0,2,4]) {
-        hinge_part_top(board_w-part_w*(i+1),part_w,od+hinge_diameter_gap,0, true);
-    }
-}
-
-module hinge_hole_bottom(od) {
-    /*
-    hinge_offset_bottom(0, od) {        
-        hinge_part(board_w,od,0,false);
-        
-        translate([-nothing/2,-od/2-nothing/2,nothing/2])
-        cube([board_w+nothing, od+nothing, od/2+big]);
-    }*/
-    
-    part_w=hinge_w/6;
-    // Remove where the hinge will go
-    for (i = [1,3,5]) {
-        hinge_part_bottom(part_w*i,part_w,od+hinge_diameter_gap,0, true);
-    }
-    
-    for (i = [1,3,5]) {
-        hinge_part_bottom(board_w-part_w*(i+1),part_w,od+hinge_diameter_gap,0, true);
-    }
-}
-
-module hinge_part_top(off, w, od, id, reversed=false) {
-    hinge_offset_top(off, od)
-    hinge_part(w,od,id,false,reversed);
-}
-
-module hinge_part_bottom(off, w, od, id, reversed=false) {
-    hinge_offset_bottom(off, od)
-    //hinge_part(w,od,id,!reversed,reversed);
-    hinge_part(w,od,id,true,reversed);
-}
-
-module hinge_top() {
-    w=hinge_w;
-    od=hinge_od;
-    id=hinge_id;
-    part_w=w/6;
-    
-    for (i = [1,3,5]) {
-        hinge_part_top(part_w*i,part_w,od,id);
-    }
-    
-    for (i = [2,4,6]) {
-        hinge_part_top(board_w-part_w*i,part_w,od,id);
-    }
-}
-
-module hinge_tapered_holes(od, id, depth) {
-    translate([0,0,hinge_offset_bottom]){
-    
-    translate([-nothing/2,board_h+hinge_offset,plate_thickness])
-    rotate([0,90,0])
-    cylinder(h=depth,d1=id*1.5,d2=id);
-    
-    translate([board_w+nothing/2,board_h+hinge_offset,plate_thickness])
-    rotate([0,270,0])
-    cylinder(h=depth,d1=id*1.5,d2=id);
-        
-    }
-}
-
-module hinge_bottom() {
-    w=hinge_w;
-    od=hinge_od;
-    id=hinge_id;
-    
-    part_w=w/6;
-    
-    difference() {
-    union() {    
-        for (i = [0,2,4]) {
-            hinge_part_bottom(part_w*i,part_w,od,id);
-        }
-        
-        for (i = [1,3,5]) {
-            hinge_part_bottom(board_w-part_w*i,part_w,od,id);
-        }
-        
-        // center solid
-        center_w = board_w-w*2;
-        hinge_part_bottom(w,center_w, od, 0);
-    }
-    // Two tapered holes at the end, to help the pins lock in place
-    hinge_tapered_holes(od, 2, part_w/2);
-    
-    
-    }
 }
 
 if (part && part == "top_shell") {
