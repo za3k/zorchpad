@@ -1,0 +1,101 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "9.0")
+	(uuid "baa9410a-5efc-4c40-ba5b-84cff0add888")
+	(paper "A3")
+	(title_block
+		(title "8x8 (Logical) Matrix View")
+	)
+	(lib_symbols)
+	(sheet
+		(at 16.51 151.13)
+		(size 129.54 128.27)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "05930f29-8464-40ea-8230-c6405d112b9e")
+		(property "Sheetname" "8x8 View"
+			(at 16.51 150.4184 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "8x8.kicad_sch"
+			(at 16.51 279.9846 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "keyboard_8x8"
+				(path "/baa9410a-5efc-4c40-ba5b-84cff0add888"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 16.51 16.51)
+		(size 267.97 127)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "085aaea4-2545-4c0f-b754-7a24f861b193")
+		(property "Sheetname" "12x5 View"
+			(at 16.51 15.7984 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "12x5.kicad_sch"
+			(at 16.51 144.0946 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "keyboard_8x8"
+				(path "/baa9410a-5efc-4c40-ba5b-84cff0add888"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)
