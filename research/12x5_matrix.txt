@@ -1,0 +1,26 @@
+Laying out a physical 12x5 keyboard as a logical 8x8 matrix
+    -- in such a way that it can be hand wired
+
+P.S. Thanks splud!
+
+(Physical view)
+
+           01234567 0123 <-- column #
+
+row# --> 0 AAAAAAAA BBBB 5 <-- row #
+         1 AAAAAAAA BBBB 6
+         2 AAAAAAAA BBBB 7
+                        
+         3 AAAAAAAA CCCC 5
+         4 AAAAAAAA CCCC 6
+
+(Logical view)
+
+           AAAAAAAA
+           AAAAAAAA
+           AAAAAAAA
+           AAAAAAAA
+           AAAAAAAA
+           BBBBCCCC
+           BBBBCCCC
+           BBBB----

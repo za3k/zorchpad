@@ -61,6 +61,9 @@ Purchased list:
 - $21.90 Low-power radio (optional). WIO-E5 MINI DEV BRD STM32WLE5JC. Digi-key, seeed studio: [Seeed 113990939][5] (x1)
     - [Datasheet][17]
 
+Possible additional parts:
+    Microsd connector (surface-mount and through-hole available)
+
 [1]: https://www.sparkfun.com/products/15444
 [2]: https://www.sparkfun.com/products/15484
 [3]: https://www.adafruit.com/product/4694

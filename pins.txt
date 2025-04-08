@@ -9,7 +9,6 @@ Available (large package)
     Can just use standard pitch headers
 
 Requirements:
-
     9 pins (9 IO) - keyboard
     0 pins - power input
     7 pins (5 out, 2 IO) - SPI
@@ -17,9 +16,43 @@ Requirements:
         4x chip select, 1 clock, 1 MOSI, 1 MISO
     2? pins (2 out) - Headphones
     0 pins - Microphone (integrated)
-    GPIO (3 IO?)
+    GPIO (???? Active research)
+        3 IO?)
         (shared clock with SPI)
 
 21 pins total (7 out-only, 14 IO, 0 in)
 
+-------------------------------------
 
+Voltages
+    Component       Operating Voltage
+    ---------       -----------------
+    Screen 1+2
+            power   4.8-5
+            I/O     2.7-3
+    E-ink* 
+            power   2.3-3.6 (3.3)
+            I       2.3-3.6 (3.3)
+            O       power minus 0.4
+    Microsd**       3.3
+    Artemis/Apollo3
+     Redboard in    5
+     Redboard out   3.3 (nominal?)
+     apollo3 in     1.755-3.63
+     apollo3 out    unknown
+    Headphones      (Match apollo3/artemis logic output)
+    GPIO            (Match shift register)
+    Keyboard        (Match shift register)
+    Radio           1.8-3.6
+    Shift Register  ????
+
+*this might be incorrectly for the red-white-black display, and does not consider the board it's mounted to.
+    https://resource.heltec.cn/download/e-ink/154/1.54b%26w%26r/HTEW0154Z17_V11/HTEW0154Z17_V11.pdf source
+**there also a is a low-voltage (1.8V) standard from 2017, but not even all new cards support it.
+
+
+(ACTIVE RESEARCH)
+Serial-in, parallel out
+    SN74HC595B
+    2-6V
+Parallel-in, serial out
